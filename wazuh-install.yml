@@ -1,8 +1,8 @@
 ---
 # By Justin Huang - jh6431@rit.edu
 # Date: 09/13/2024
-- name: Install Wazuh
-  hosts: all
+- name: Install Wazuh Manager
+  hosts: manager
   become: yes
   tasks:
     - name: Download the Wazuh install script
@@ -16,7 +16,7 @@
         cmd: bash /tmp/wazuh-install.sh -a -i -o # the -a option will install all of the server's components together, the -i option will ignore warnings, and the -o option will overwrite any previous installation in case there is one.
     
 - name: Rotate Wazuh passwords
-  hosts: all
+  hosts: manager
   become: yes
   tasks:
     - name: Download the Wazuh password changing utility
@@ -27,41 +27,47 @@
     
     - name: Run the Wazuh password changing script
       ansible.builtin.shell:
-        cmd: bash /tmp/wazuh-passwords-tool.sh -a > /var/ossec/wazuh-passwords.txt # the -a option will change passwords for all users, including API users
+        cmd: bash /tmp/wazuh-passwords-tool.sh -a > /var/ossec/etc/wazuh-passwords.txt # the -a option will change passwords for all users, including API users
         # writes the output of the password rotation to a plaintext file, should be deleted or obscured after it is taken note of
        
-- name: Change server hostname
-  hosts: all
+- name: Reconfigure file permissions
+  hosts: manager
   become: yes
-  vars:
-    new_hostname: wazuh-manager
-  tasks: 
-    - name: Change server hostname
-      ansible.builtin.command:
-        cmd: hostnamectl set-hostname "{{ new_hostname }}"
-
-- name: Enable agent enrollment password
-  hosts: all
-  become: yes
-  vars:
-    custom_password: F0xtr0t! # Password to be set for agent enrollment - change this before running, if preferable
   tasks:
-    - name: Enable password-based authentication in ossec.conf
-      ansible.builtin.lineinfile:
+    - name: Set ownership for ossec.conf
+      ansible.builtin.file:
         path: /var/ossec/etc/ossec.conf
-        regexp: '^ *<use_password>'
-        line: '<use_password>yes</use_password>' # Find and replace line in configuration file to enable password authentication
-        create: yes
-
-    - name: Set custom authentication password
-      ansible.builtin.copy:
-        content: "{{ custom_password }}"  # Ensure 'custom_password' is passed as a variable
-        dest: /var/ossec/etc/authd.pass
-        mode: '0640'
         owner: root
         group: wazuh
+        mode: '0660'
 
-    - name: Restart Wazuh manager service
-      ansible.builtin.service:
-        name: wazuh-manager
-        state: restarted
+    - name: Set ownership for agent.conf
+      ansible.builtin.file:
+        path: /var/ossec/etc/shared/default/agent.conf
+        owner: wazuh
+        group: wazuh
+        mode: '0660'
+
+    - name: Set ownership for internal_options.conf
+      ansible.builtin.file:
+        path: /var/ossec/etc/internal_options.conf
+        owner: root
+        group: wazuh
+        mode: '0640'
+
+    - name: Set ownership for ossec.log
+      ansible.builtin.file:
+        path: /var/ossec/logs/ossec.log
+        owner: root
+        group: wazuh
+        mode: '0660'
+
+- name: Set up agent groups
+  hosts: manager
+  become: yes
+    - name: Add linux agent group
+      command: /var/ossec/bin/agent_groups -a -g linux -q
+
+    - name: Add windows agent group
+      command: /var/ossec/bin/agent_groups -a -g windows -q
+
