@@ -1,6 +1,6 @@
 ---
-# By Justin Huang - jh6431@rit.edu
-# Date: 09/13/2024
+# Wazuh manager install and setup
+
 - name: Install Wazuh Manager
   hosts: manager
   become: yes
@@ -20,7 +20,7 @@
         name:
           - osquery
         state: latest
-        
+
 - name: Rotate Wazuh passwords
   hosts: manager
   become: yes
@@ -113,3 +113,41 @@
         owner: root
         group: wazuh
         mode: '0660'
+
+- name: Set up Yara (manager)
+  hosts: manager
+  become: yes
+  tasks:
+    - name: Copy over decoder for Yara
+      copy:
+        src: decoders/yara_decoder.xml
+        dst: /var/ossec/etc/decoders/yara-decoder.xml
+        owner: wazuh
+        group: wazuh
+        mode: '0660'
+
+- name: Install Wazuh agents
+  hosts: linux
+  become: yes
+  tasks:
+    tasks:
+    - name: Download and import Wazuh GPG key
+      ansible.builtin.command: 
+        cmd: "curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import"
+      args:
+        warn: false
+    
+    - name: Set permissions for the Wazuh GPG key
+      ansible.builtin.file:
+        path: /usr/share/keyrings/wazuh.gpg
+        mode: '0644'
+    
+    - name: Add Wazuh repository to sources list
+      ansible.builtin.command: echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
+    
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+    
+    - name: Install Wazuh agent using environment variable
+      ansible.builtin.shell: WAZUH_MANAGER="{{ hostvars['manager'][0] }}" apt-get install -y wazuh-agent
