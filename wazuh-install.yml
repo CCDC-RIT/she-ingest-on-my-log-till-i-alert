@@ -126,6 +126,8 @@
         group: wazuh
         mode: '0660'
 
+--- 
+# Agent config starts here
 - name: Install Wazuh agents
   hosts: linux
   become: yes
@@ -151,3 +153,66 @@
     
     - name: Install Wazuh agent using environment variable
       ansible.builtin.shell: WAZUH_MANAGER="{{ hostvars['manager'][0] }}" apt-get install -y wazuh-agent
+
+    - name: Install osquery
+      ansible.builtin.package:
+        name:
+          - osquery
+        state: latest
+
+- name: Install YARA and configure YARA rules
+  hosts: linux
+  become: yes
+
+  tasks:
+    - name: Install YARA and git
+      ansible.builtin.package:
+        name: 
+          - yara
+          - git
+        state: present
+
+    - name: Create /opt/yara/rules directory
+      ansible.builtin.file:
+        path: /opt/yara/rules
+        state: directory
+        mode: '0755'
+
+    - name: Clone protections-artifacts repository
+    # Replace with RIT CCDC team rules once repo public
+      ansible.builtin.git:
+        repo: https://github.com/elastic/protections-artifacts
+        dest: /opt/yara/rules/protections-artifacts
+        force: yes
+
+    - name: Compile YARA rules
+      ansible.builtin.command: yarac Linux* Multi* /opt/yara/rules/compiled.linux
+      args:
+        chdir: /opt/yara/rules/protections-artifacts/yara/rules
+      become: yes
+
+    - name: copy over YARA active response script
+      copy: 
+        src: yara.sh
+        dst: /var/ossec/active-response/bin/yara.sh
+        owner: root
+        group: wazuh 
+        mode: '0750'
+
+- name: Enable and restart wazuh-agent service
+  hosts: linux
+  become: yes
+  tasks:
+  - name: Reload systemd daemon
+    ansible.builtin.systemd:
+      daemon_reload: yes
+
+  - name: Enable Wazuh agent service
+    ansible.builtin.systemd:
+      name: wazuh-agent
+      enabled: yes
+
+  - name: Start Wazuh agent service
+    ansible.builtin.systemd:
+      name: wazuh-agent
+      state: started
