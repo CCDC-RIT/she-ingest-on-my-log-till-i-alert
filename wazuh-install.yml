@@ -16,46 +16,36 @@
         cmd: bash /tmp/wazuh-install.sh -a -i -o
       args:
         creates: /var/ossec
-    
+
 - name: Install osquery
-  hosts: manager
+  hosts: all  # Change this to the specific group if needed
   become: yes
   tasks:
-    - name: Download osquery tarball
-      ansible.builtin.get_url:
-        url: https://pkg.osquery.io/linux/osquery-5.13.1_1.linux_x86_64.tar.gz
-        dest: /tmp/osquery.tar.gz
+    - name: Create keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
 
-    - name: Extract osquery tarball
-      ansible.builtin.unarchive:
-        src: /tmp/osquery.tar.gz
-        dest: /opt/
-        remote_src: yes
-
-    - name: Move osquery binary to /usr/bin
+    - name: Download osquery GPG key
       ansible.builtin.command:
-        cmd: mv /opt/osquery-5.13.1_1.linux_x86_64/osquery* /usr/bin/
+        cmd: curl -L https://pkg.osquery.io/deb/pubkey.gpg | tee /etc/apt/keyrings/osquery.asc
       args:
-        removes: /usr/bin/osqueryd  # Remove the binary if it already exists
         warn: false
 
-    - name: Set the correct permissions for osquery
-      ansible.builtin.file:
-        path: /usr/bin/osqueryd
-        owner: root
-        group: root
-        mode: '0755'
+    - name: Add osquery repository
+      ansible.builtin.command:
+        cmd: echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/osquery.asc] https://pkg.osquery.io/deb deb main" | tee -a /etc/apt/sources.list.d/osquery.list
+      args:
+        warn: false
 
-    - name: Clean up the downloaded tarball
-      ansible.builtin.file:
-        path: /tmp/osquery.tar.gz
-        state: absent
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
 
-    - name: Start osquery daemon
-      ansible.builtin.systemd:
-        name: osqueryd
-        state: started
-        enabled: yes
+    - name: Install osquery
+      ansible.builtin.apt:
+        name: osquery
+        state: present
 
 - name: Rotate Wazuh passwords
   hosts: manager
@@ -188,41 +178,35 @@
       ansible.builtin.shell: 
         cmd: WAZUH_MANAGER="{{ hostvars['manager'][0] }}" apt-get install -y wazuh-agent
 
-    - name: Download osquery tarball
-      ansible.builtin.get_url:
-        url: https://pkg.osquery.io/linux/osquery-5.13.1_1.linux_x86_64.tar.gz
-        dest: /tmp/osquery.tar.gz
-
-    - name: Extract osquery tarball
-      ansible.builtin.unarchive:
-        src: /tmp/osquery.tar.gz
-        dest: /opt/
-        remote_src: yes
-
-    - name: Move osquery binary to /usr/bin
-      ansible.builtin.command:
-        cmd: mv /opt/osquery-5.13.1_1.linux_x86_64/osquery* /usr/bin/
-      args:
-        removes: /usr/bin/osqueryd  # Remove the binary if it already exists
-        warn: false
-
-    - name: Set the correct permissions for osquery
+- name: Install osquery
+  hosts: all  # Change this to the specific group if needed
+  become: yes
+  tasks:
+    - name: Create the /etc/apt/keyrings directory
       ansible.builtin.file:
-        path: /usr/bin/osqueryd
-        owner: root
-        group: root
+        path: /etc/apt/keyrings
+        state: directory
         mode: '0755'
 
-    - name: Clean up the downloaded tarball
-      ansible.builtin.file:
-        path: /tmp/osquery.tar.gz
-        state: absent
+    - name: Download the osquery GPG key and save it to /etc/apt/keyrings/osquery.asc
+      ansible.builtin.get_url:
+        url: https://pkg.osquery.io/deb/pubkey.gpg
+        dest: /etc/apt/keyrings/osquery.asc
+        mode: '0644'
 
-    - name: Start osquery daemon
-      ansible.builtin.systemd:
-        name: osqueryd
-        state: started
-        enabled: yes
+    - name: Add the osquery repository
+      ansible.builtin.apt_repository:
+        repo: 'deb [arch=amd64 signed-by=/etc/apt/keyrings/osquery.asc] https://pkg.osquery.io/deb deb main'
+        state: present
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install osquery
+      ansible.builtin.apt:
+        name: osquery
+        state: present
 
 - name: Install YARA and configure YARA rules
   hosts: linux
