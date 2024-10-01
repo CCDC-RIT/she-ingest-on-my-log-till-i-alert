@@ -15,6 +15,12 @@
       ansible.builtin.command:
         cmd: bash /tmp/wazuh-install.sh -a -i -o # the -a option will install all of the server's components together, the -i option will ignore warnings, and the -o option will overwrite any previous installation in case there is one.
     
+    - name: Install osquery
+      ansible.builtin.package:
+        name:
+          - osquery
+        state: latest
+        
 - name: Rotate Wazuh passwords
   hosts: manager
   become: yes
@@ -34,27 +40,6 @@
   hosts: manager
   become: yes
   tasks:
-    - name: Set ownership for ossec.conf
-      ansible.builtin.file:
-        path: /var/ossec/etc/ossec.conf
-        owner: root
-        group: wazuh
-        mode: '0660'
-
-    - name: Set ownership for agent.conf
-      ansible.builtin.file:
-        path: /var/ossec/etc/shared/default/agent.conf
-        owner: wazuh
-        group: wazuh
-        mode: '0660'
-
-    - name: Set ownership for internal_options.conf
-      ansible.builtin.file:
-        path: /var/ossec/etc/internal_options.conf
-        owner: root
-        group: wazuh
-        mode: '0640'
-
     - name: Set ownership for ossec.log
       ansible.builtin.file:
         path: /var/ossec/logs/ossec.log
@@ -65,9 +50,66 @@
 - name: Set up agent groups
   hosts: manager
   become: yes
+  tasks:
     - name: Add linux agent group
       command: /var/ossec/bin/agent_groups -a -g linux -q
 
     - name: Add windows agent group
       command: /var/ossec/bin/agent_groups -a -g windows -q
 
+- name: Set up agent configurations
+  hosts: manager
+  become: yes
+  tasks:
+    - name: Configure kernel control commands
+      copy:
+        content: |
+          insmod:
+          rmmod:
+          modprobe:
+        dest: /var/ossec/etc/lists/kernel_control_commands
+
+    - name: Copy osquery.conf
+      copy:
+        src: osquery.conf
+        dest: /etc/osquery/osquery.conf
+
+    - name: Copy centralized_agent.conf
+      copy:
+        src: centralized_agent.conf
+        dest: /var/ossec/etc/shared/linux/agent.conf
+        owner: wazuh
+        group: wazuh
+        mode: '0660'
+
+    - name: Copy internal_options.conf
+      copy:
+        src: internal_options.conf
+        dest: /var/ossec/etc/internal_options.conf
+        owner: root
+        group: wazuh
+        mode: '0640'
+
+    - name: Copy ossec.conf
+      copy:
+        src: ossec.conf
+        dest: /var/ossec/etc/ossec.conf
+        owner: root
+        group: wazuh
+        mode: '0660'
+
+    - name: Copy linux_rules.xml
+      copy:
+        src: linux_rules.xml
+        dest: /var/ossec/ruleset/rules/linux_rules.xml
+        owner: root
+        group: wazuh
+        mode: '0660'
+
+    - name: Copy windows_rules.xml
+      copy:
+        src: windows_rules.xml
+        dest: /var/ossec/ruleset/rules/windows_rules.xml
+        owner: root
+        group: wazuh
+        mode: '0660'
