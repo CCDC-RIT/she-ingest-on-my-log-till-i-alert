@@ -150,45 +150,45 @@
         group: wazuh
         mode: '0660'
 
-- name: Install Wazuh agents
+- name: Install Linux Wazuh agents
   hosts: linux
   become: yes
   tasks:
-    - name: copy over wazuh binary
-      ansible.builtin.copy:
-        src: binaries/wazuh-agent_4.7.2-1_amd64_debian.deb
-        dest: /tmp/wazuh-agent_4.7.2-1_amd64_debian.deb
+    # - name: copy over wazuh binary
+    #   ansible.builtin.copy:
+    #     src: binaries/wazuh-agent_4.7.2-1_amd64_debian.deb
+    #     dest: /tmp/wazuh-agent_4.7.2-1_amd64_debian.deb
     
-    - name: Install Wazuh agent from binary
-      ansible.builtin.apt:
-        deb: /tmp/wazuh-agent_4.7.2-1_amd64_debian.deb
-        state: present
-        
-    # - name: Install curl
-    #   ansible.builtin.package:
-    #     name: curl
+    # - name: Install Wazuh agent from binary
+    #   ansible.builtin.apt:
+    #     deb: /tmp/wazuh-agent_4.7.2-1_amd64_debian.deb
     #     state: present
         
-    # - name: Download and import Wazuh GPG key
-    #   ansible.builtin.command: 
-    #     cmd: "curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import"
+    - name: Install curl
+      ansible.builtin.package:
+        name: curl
+        state: present
+        
+    - name: Download and import Wazuh GPG key
+      ansible.builtin.command: 
+        cmd: "curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import"
     
-    # - name: Set permissions for the Wazuh GPG key
-    #   ansible.builtin.file:
-    #     path: /usr/share/keyrings/wazuh.gpg
-    #     mode: '0644'
+    - name: Set permissions for the Wazuh GPG key
+      ansible.builtin.file:
+        path: /usr/share/keyrings/wazuh.gpg
+        mode: '0644'
     
-    # - name: Add Wazuh repository to sources list
-    #   ansible.builtin.command: 
-    #     cmd: echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
+    - name: Add Wazuh repository to sources list
+      ansible.builtin.command: 
+        cmd: echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
     
-    # - name: Update apt package index
-    #   ansible.builtin.apt:
-    #     update_cache: yes
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
     
-    # - name: Install Wazuh agent using environment variable
-    #   ansible.builtin.shell: 
-    #     cmd: WAZUH_MANAGER="{{ hostvars['manager'][0] }}" apt-get install -y wazuh-agent # this did not work, use hardcoded manager ip or fix.
+    - name: Install Wazuh agent using environment variable
+      ansible.builtin.shell: 
+        cmd: WAZUH_MANAGER="{{ MANAGER_IP }}" apt-get install -y wazuh-agent 
 
 - name: Install YARA and configure YARA rules
   hosts: linux
@@ -207,17 +207,13 @@
         state: directory
         mode: '0755'
 
-    - name: Clone protections-artifacts repository
-      ansible.builtin.git:
-        repo: https://github.com/elastic/protections-artifacts
-        dest: /opt/yara/rules/protections-artifacts
-        force: yes
-
-    - name: Compile YARA rules
-      ansible.builtin.command: 
-        cmd: yarac Linux* Multi* /opt/yara/rules/compiled.linux
-      args:
-        chdir: /opt/yara/rules/protections-artifacts/yara/rules
+    - name: Copy over compiled YARA rules
+      ansible.builtin.copy:
+        src: compiled.linux
+        dest: /opt/yara/rules/compiled.linux
+        owner: root
+        group: wazuh
+        mode: '0660'
 
     - name: Copy over YARA active response script
       ansible.builtin.copy: 
