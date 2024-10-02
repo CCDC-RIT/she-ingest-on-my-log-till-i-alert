@@ -167,7 +167,7 @@
     - name: Enroll agent using manager IP address
       replace:
         path: /var/ossec/etc/ossec.conf
-        regexp: '\[MANAGER_IP\]'
+        regexp: 'MANAGER_IP'
         replace: "{{ manager_ip }}"
 
     # - name: Install curl
