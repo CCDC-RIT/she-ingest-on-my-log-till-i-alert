@@ -95,12 +95,12 @@
 
     # - name: Copy osquery.conf
     #   ansible.builtin.copy:
-    #     src: osquery.conf
+    #     src: configs/osquery.conf
     #     dest: /etc/osquery/osquery.conf
 
     - name: Copy centralized_agent.conf
       ansible.builtin.copy:
-        src: centralized_agent.conf
+        src: configs/centralized_agent.conf
         dest: /var/ossec/etc/shared/linux/agent.conf
         owner: wazuh
         group: wazuh
@@ -108,7 +108,7 @@
 
     - name: Copy internal_options.conf
       ansible.builtin.copy:
-        src: internal_options.conf
+        src: configs/internal_options.conf
         dest: /var/ossec/etc/internal_options.conf
         owner: root
         group: wazuh
@@ -116,7 +116,7 @@
 
     - name: Copy ossec.conf
       ansible.builtin.copy:
-        src: ossec.conf
+        src: configs/ossec.conf
         dest: /var/ossec/etc/ossec.conf
         owner: root
         group: wazuh
@@ -124,7 +124,7 @@
 
     - name: Copy linux_rules.xml
       ansible.builtin.copy:
-        src: linux_rules.xml
+        src: rules/linux_rules.xml
         dest: /var/ossec/ruleset/rules/linux_rules.xml
         owner: root
         group: wazuh
@@ -132,7 +132,7 @@
 
     - name: Copy windows_rules.xml
       ansible.builtin.copy:
-        src: windows_rules.xml
+        src: rules/windows_rules.xml
         dest: /var/ossec/ruleset/rules/windows_rules.xml
         owner: root
         group: wazuh
@@ -215,7 +215,7 @@
 
     - name: Copy over compiled YARA rules
       ansible.builtin.copy:
-        src: compiled.linux
+        src: rules/compiled.linux
         dest: /opt/yara/rules/compiled.linux
         owner: root
         group: wazuh
@@ -223,7 +223,7 @@
 
     - name: Copy over YARA active response script
       ansible.builtin.copy: 
-        src: yara.sh
+        src: configs/yara.sh
         dest: /var/ossec/active-response/bin/yara.sh
         owner: root
         group: wazuh 
