@@ -164,7 +164,12 @@
         deb: /tmp/wazuh-agent_4.7.2-1_amd64_debian.deb
         state: present
 
-        
+    - name: Enroll agent using manager IP address
+      replace:
+        path: /var/ossec/etc/ossec.conf
+        regexp: '\[MANAGER_IP\]'
+        replace: "{{ manager_ip }}"
+
     # - name: Install curl
     #   ansible.builtin.package:
     #     name: curl
@@ -189,7 +194,7 @@
     
     # - name: Install Wazuh agent using environment variable
     #   ansible.builtin.shell: 
-    #     cmd: WAZUH_MANAGER="{{ MANAGER_IP }}" apt-get install -y wazuh-agent 
+    #     cmd: WAZUH_MANAGER="{{ manager_ip }}" apt-get install -y wazuh-agent 
 
 - name: Install YARA and configure YARA rules
   hosts: linux
