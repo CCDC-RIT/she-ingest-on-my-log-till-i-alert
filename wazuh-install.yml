@@ -138,17 +138,31 @@
         group: wazuh
         mode: '0660'
 
-- name: Set up Yara (manager)
+- name: Set up decoders
   hosts: manager
   become: yes
   tasks:
-    - name: Copy over decoder for Yara
+    - name: Copy over decoders
       ansible.builtin.copy:
-        src: decoders/yara_decoder.xml
-        dest: /var/ossec/etc/decoders/yara-decoder.xml
+        src: decoders/
+        dest: /var/ossec/etc/decoders/
         owner: wazuh
         group: wazuh
         mode: '0660'
+
+    - name: Find all files in the decoders directory
+      ansible.builtin.find:
+        paths: /var/ossec/etc/decoders/
+        recurse: yes
+      register: decoders_files
+
+    - name: Set correct permissions for all decoder files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        owner: wazuh
+        group: wazuh
+        mode: '0660'
+      loop: "{{ decoders_files.files }}"
 
 - name: Install Linux Wazuh agents
   hosts: linux
@@ -246,3 +260,7 @@
       ansible.builtin.systemd:
         name: wazuh-agent
         state: started
+
+- name: Install Windows Wazuh agents
+  hosts: windows
+  become: yes 
