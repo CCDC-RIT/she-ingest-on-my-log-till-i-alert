@@ -77,6 +77,19 @@
     #     src: configs/osquery.conf
     #     dest: /etc/osquery/osquery.conf
 
+- name: Memory locking
+  ansible.builtin.lineinfile:
+    name: /etc/wazuh-indexer/opensearch.yml
+    line: "bootstrap.memory_lock: true"
+    state: present
+
+- name: Memory locking
+  ansible.builtin.lineinfile:
+    name: /lib/systemd/system/wazuh-indexer.service
+    line: LimitMEMLOCK=infinity
+    state: present
+    insertafter: '^\[Service\]$'
+
 - name: Copy centralized_agent.conf
   ansible.builtin.copy:
     src: configs/centralized_agent.conf
