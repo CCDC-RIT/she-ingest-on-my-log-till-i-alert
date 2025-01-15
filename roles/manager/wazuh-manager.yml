@@ -90,10 +90,18 @@
     state: present
     insertafter: '^\[Service\]$'
 
-- name: Copy centralized_agent.conf
+- name: Copy Linux agent configs
   ansible.builtin.copy:
-    src: configs/centralized_agent.conf
+    src: configs/agent_linux.conf
     dest: /var/ossec/etc/shared/linux/agent.conf
+    owner: wazuh
+    group: wazuh
+    mode: '0660'
+
+- name: Copy Windows agent configs
+  ansible.builtin.copy:
+    src: configs/agent_windows.conf
+    dest: /var/ossec/etc/shared/windows/agent.conf
     owner: wazuh
     group: wazuh
     mode: '0660'
@@ -151,3 +159,15 @@
     group: wazuh
     mode: '0660'
   loop: "{{ decoders_files.files }}"
+
+- name: Set up Fluent Bit
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh 
+    dest: /tmp/fluentbitinstall.sh
+    mode: 0755
+  
+- name: Run the Fluent Bit install script
+  ansible.builtin.command:
+    cmd: bash /tmp/fluentbitinstall.sh 
+
+#TODO manually edit /etc/fluent-bit/fluent-bit.conf to pull /var/ossec/logs/alerts.json and ship it to the graylog host and port
