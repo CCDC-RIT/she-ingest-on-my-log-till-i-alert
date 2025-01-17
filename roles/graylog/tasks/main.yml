@@ -1,0 +1,90 @@
+---
+#TODO: rewrite for package managers other than apt
+- name: Check installed packages
+  ansible.builtin.package_facts:
+
+- name: Add Graylog GPG key
+  apt_key:
+    url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"
+    state: present
+  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+
+- name: Download and install Graylog repository
+  apt:
+    deb: "https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb" #keep locally
+    state: present
+  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+
+- name: Update package cache
+  apt:
+    update_cache: yes
+
+- name: Install Graylog components
+  apt:
+    name:
+      - graylog-datanode
+      - graylog-server
+      - mongodb
+    state: present
+  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages and 'mongodb' not in ansible_facts.packages"
+
+- name: Enable and restart MongoDB
+  systemd:
+    name: mongod.service
+    enabled: true
+    state: restarted
+
+- name: Set vm.max_map_count for Elasticsearch
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: "vm.max_map_count=262144"
+    state: present
+
+- name: Apply sysctl settings
+  command: sysctl -p
+
+- name: Install password utilities
+  ansible.builtin.package:
+    name: 
+      - pwgen
+    state: present 
+
+- name: Generate password_secret
+  command: pwgen -N 1 -s 96
+  register: password_secret
+
+- name: Set password_secret in datanode.conf
+  lineinfile:
+    path: /etc/graylog/datanode/datanode.conf
+    regexp: '^password_secret='
+    line: "password_secret={{ password_secret.stdout }}"
+    state: present
+
+- name: Set root_password_sha2 in server.conf
+  lineinfile:
+    path: /etc/graylog/server/server.conf
+    regexp: '^root_password_sha2='
+    line: "root_password_sha2={{ root_password | password_hash('sha256') }}"
+    state: present
+    owner: graylog
+    group: graylog
+    mode: '0640'
+
+- name: Configure Elasticsearch hosts in server.conf
+  lineinfile:
+    path: /etc/graylog/server/server.conf
+    regexp: '^elasticsearch_hosts='
+    line: "elasticsearch_hosts=https://user:pass@wazuh-indexerhostname:9200"
+    state: present
+
+- name: Enable and start Graylog Server
+  systemd:
+    name: graylog-server.service
+    enabled: true
+    state: restarted
+
+- name: Enable and start Graylog Datanode
+  systemd:
+    name: graylog-datanode.service
+    enabled: true
+    state: restarted
