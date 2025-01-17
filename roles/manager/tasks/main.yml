@@ -1,9 +1,11 @@
 ---
 # Wazuh manager install and setup
-- name: Download the Wazuh install script
-  ansible.builtin.get_url:
-    url: https://packages.wazuh.com/4.9/wazuh-install.sh
+- name: Copy the Wazuh install script
+  ansible.builtin.copy:
+    src: wazuh-install.sh 
     dest: /tmp/wazuh-install.sh
+    owner: wazuh
+    group: wazuh
     mode: '0755'
 
 - name: Run the Wazuh install script
@@ -39,10 +41,12 @@
 #         name: osquery
 #         state: present
 
-- name: Download the Wazuh password changing utility
-  ansible.builtin.get_url:
-    url: https://packages.wazuh.com/4.9/wazuh-passwords-tool.sh
+- name: Copy the Wazuh password changing utility
+  ansible.builtin.copy:
+    src: wazuh-passwords-tool.sh 
     dest: /tmp/wazuh-passwords-tool.sh
+    owner: wazuh
+    group: wazuh
     mode: '0755'
 
 - name: Run the Wazuh password changing script
@@ -92,7 +96,7 @@
 
 - name: Copy Linux agent configs
   ansible.builtin.copy:
-    src: configs/agent_linux.conf
+    src: agent_linux.conf
     dest: /var/ossec/etc/shared/linux/agent.conf
     owner: wazuh
     group: wazuh
@@ -100,7 +104,7 @@
 
 - name: Copy Windows agent configs
   ansible.builtin.copy:
-    src: configs/agent_windows.conf
+    src: agent_windows.conf
     dest: /var/ossec/etc/shared/windows/agent.conf
     owner: wazuh
     group: wazuh
@@ -108,7 +112,7 @@
 
 - name: Copy internal_options.conf
   ansible.builtin.copy:
-    src: configs/internal_options.conf
+    src: internal_options.conf
     dest: /var/ossec/etc/internal_options.conf
     owner: root
     group: wazuh
@@ -116,7 +120,7 @@
 
 - name: Copy ossec.conf
   ansible.builtin.copy:
-    src: configs/ossec.conf
+    src: ossec.conf
     dest: /var/ossec/etc/ossec.conf
     owner: root
     group: wazuh
@@ -124,7 +128,7 @@
 
 - name: Copy linux_rules.xml
   ansible.builtin.copy:
-    src: rules/linux_rules.xml
+    src: linux_rules.xml
     dest: /var/ossec/ruleset/rules/linux_rules.xml
     owner: root
     group: wazuh
@@ -132,7 +136,7 @@
 
 - name: Copy windows_rules.xml
   ansible.builtin.copy:
-    src: rules/windows_rules.xml
+    src: windows_rules.xml
     dest: /var/ossec/ruleset/rules/windows_rules.xml
     owner: root
     group: wazuh
@@ -161,8 +165,8 @@
   loop: "{{ decoders_files.files }}"
 
 - name: Set up fluentbit
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/fluent/fluent-bit/master/install.sh 
+  ansible.builtin.copy:
+    src: fluentbit.sh
     dest: /tmp/fluentbitinstall.sh
     mode: 0755
   
@@ -170,7 +174,7 @@
   ansible.builtin.command:
     cmd: bash /tmp/fluentbitinstall.sh 
 
-- name: Replace configuration lines in Fluent Bit configuration file
+- name: Replace configuration lines in Fluent Bit configuration file #TODO replace with template
   ansible.builtin.blockinfile:
     path: /etc/fluent-bit/fluent-bit.conf
     marker: ""
