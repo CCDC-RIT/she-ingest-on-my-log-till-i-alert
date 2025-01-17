@@ -4,8 +4,6 @@
   ansible.builtin.copy:
     src: wazuh-install.sh 
     dest: /tmp/wazuh-install.sh
-    owner: wazuh
-    group: wazuh
     mode: '0755'
 
 - name: Run the Wazuh install script
@@ -196,4 +194,4 @@
           Match wazuh
           Format  json_lines
           json_date_key true
-  state: present
+  # state: present
