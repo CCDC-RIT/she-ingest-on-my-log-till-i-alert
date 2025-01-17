@@ -1,0 +1,42 @@
+---
+# asdaklsjdaklsjdaskldj
+# 1. wazuh manager install
+# 2. rotate passwords and log in register
+# 3. wazuh agent install - does not have windows agent
+# 4. graylog setup - change plans depending on distro, if graylog already installed
+- name: Install Wazuh Manager
+  hosts: manager
+  become: yes
+  roles:
+    - manager
+  tags:
+    - wazuh
+    - manager
+    - never
+
+- name: Install Wazuh Agents
+  hosts: linux
+  become: yes
+  roles: 
+    - agent
+  tags:
+    - wazuh
+    - agent
+    - never
+
+- name: Configure Graylog
+  hosts: graylog
+  become: yes
+  vars_prompt:
+    - name: root_password
+      prompt: Enter graylog root password
+      private: true
+      encrypt: sha256_crypt
+      confirm: true
+      salt_size: 7
+
+  roles:
+    - graylog
+  tags:
+    - graylog
+    - never
