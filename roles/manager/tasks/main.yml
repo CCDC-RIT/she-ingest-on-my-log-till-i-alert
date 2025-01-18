@@ -195,3 +195,21 @@
           Format  json_lines
           json_date_key true
   # state: present
+
+- name: Enable and restart Wazuh Indexer
+  systemd:
+    name: wazuh-indexer.service
+    enabled: true
+    state: restarted
+
+- name: Enable and restart Wazuh Manager
+  systemd:
+    name: wazuh-manager.service
+    enabled: true
+    state: restarted
+
+- name: Enable and restart Wazuh Dashboard
+  systemd:
+    name: wazuh-dashboard.service
+    enabled: true
+    state: restarted
