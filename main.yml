@@ -10,6 +10,7 @@
   roles:
     - manager
   tags:
+    - logging
     - wazuh
     - manager
     - never
@@ -20,6 +21,7 @@
   roles: 
     - agent
   tags:
+    - logging
     - wazuh
     - agent
     - never
@@ -38,5 +40,6 @@
   roles:
     - graylog
   tags:
+    - logging
     - graylog
     - never
