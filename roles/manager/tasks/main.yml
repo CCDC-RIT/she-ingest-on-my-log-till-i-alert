@@ -127,7 +127,7 @@
 - name: Copy linux_rules.xml
   ansible.builtin.copy:
     src: linux_rules.xml
-    dest: /var/ossec/ruleset/rules/linux_rules.xml
+    dest: /var/ossec/etc/rules/linux_rules.xml
     owner: root
     group: wazuh
     mode: '0660'
@@ -135,7 +135,7 @@
 - name: Copy windows_rules.xml
   ansible.builtin.copy:
     src: windows_rules.xml
-    dest: /var/ossec/ruleset/rules/windows_rules.xml
+    dest: /var/ossec/etc/rules/windows_rules.xml
     owner: root
     group: wazuh
     mode: '0660'
