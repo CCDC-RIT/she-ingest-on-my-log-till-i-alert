@@ -9,19 +9,42 @@
   ansible.builtin.package:
     name: curl
     state: present
-    
-- name: Download and import Wazuh GPG key
-  ansible.builtin.command: 
-    cmd: "curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import"
 
-- name: Set permissions for the Wazuh GPG key
+- name: Copy Wazuh GPG key
+  ansible.builtin.copy:
+    src: GPG-KEY-WAZUH
+    dest: /tmp/GPG-KEY-WAZUH
+    mode: 0644
+
+- name: Ensure the keyring directory exists
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Create an empty keyring file if it doesn't exist
   ansible.builtin.file:
     path: /usr/share/keyrings/wazuh.gpg
-    mode: '0644'
+    state: touch
+    mode: 0644
 
-- name: Add Wazuh repository to sources list
+- name: Import Wazuh GPG key
   ansible.builtin.command: 
-    cmd: echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
+    cmd: gpg --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import /tmp/GPG-KEY-WAZUH
+
+- name: Create Wazuh sources list file
+  ansible.builtin.file: 
+    path: /etc/apt/sources.list.d/wazuh.list
+    state: touch
+    mode: 0644
+
+- name: Add wazuh repository to sources.list
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/wazuh.list
+    line: "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main"
+    state: present
 
 - name: Update apt package index
   ansible.builtin.apt:
@@ -80,7 +103,7 @@
     name: wazuh-agent
     enabled: yes
 
-- name: Start Wazuh agent service
+- name: Restart Wazuh agent service
   ansible.builtin.systemd:
     name: wazuh-agent
-    state: started
+    state: restarted
