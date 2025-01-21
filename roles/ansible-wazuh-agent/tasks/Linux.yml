@@ -121,7 +121,7 @@
 
 - name: Copy over YARA active response script
   ansible.builtin.copy: 
-    src: configs/yara.sh
+    src: yara.sh
     dest: /var/ossec/active-response/bin/yara.sh
     owner: root
     group: wazuh 
@@ -131,7 +131,7 @@
   service:
     name: wazuh-agent
     enabled: true
-    state: started
+    state: restarted
   tags: config
 
 - include_tasks: "RMRedHat.yml"
