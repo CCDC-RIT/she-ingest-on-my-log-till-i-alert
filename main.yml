@@ -15,16 +15,37 @@
     - manager
     - never
 
+# - name: Install Wazuh Agents
+#   hosts: linux
+#   become: yes
+#   roles: 
+#     - agent
+#   tags:
+#     - logging
+#     - wazuh
+#     - agent
+#     - never
+
 - name: Install Wazuh Agents
   hosts: linux
   become: yes
   roles: 
-    - agent
+    - ansible-wazuh-agent
   tags:
     - logging
     - wazuh
     - agent
     - never
+  vars:
+    wazuh_managers:
+      - address: {{ manager_ip }}
+        port: 1514
+        protocol: tcp
+        api_port: 55000
+        api_proto: 'https'
+        api_user: wazuh
+        max_retries: 5
+        retry_interval: 5
 
 - name: Configure Graylog
   hosts: graylog
