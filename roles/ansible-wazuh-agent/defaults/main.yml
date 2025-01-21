@@ -213,7 +213,7 @@ wazuh_agent_syscheck:
       checks: 'realtime="yes"'
     - dirs: /root
       checks: 'realtime="yes"'
-    - dirs: /tmp,/var/www
+    - dirs: /tmp,/var/www,/var/tmp,
       checks: 'realtime="yes"'
     - dirs: /usr/lib/systemd/system,/usr/local/lib/systemd/system,/lib/systemd/system/
       checks: 'realtime="yes"'

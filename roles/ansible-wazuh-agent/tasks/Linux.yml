@@ -87,6 +87,46 @@
   tags:
     - config
 
+- name: Copy over Packetbeat install script
+  ansible.builtin.copy:
+    src: packetbeat.sh
+    dest: /tmp/packetbeat.sh
+    mode: 0755
+
+- name: Run Packetbeat install script 
+  ansible.builtin.command:
+    cmd: bash /tmp/packetbeat.sh 
+
+- name: Install YARA and git
+  ansible.builtin.package:
+    name: 
+      - yara
+      - git
+      - snoopy
+    state: present
+
+- name: Create /opt/yara/rules directory
+  ansible.builtin.file:
+    path: /opt/yara/rules
+    state: directory
+    mode: '0755'
+
+- name: Copy over compiled YARA rules
+  ansible.builtin.copy:
+    src: compiled.linux
+    dest: /opt/yara/rules/compiled.linux
+    owner: root
+    group: wazuh
+    mode: '0660'
+
+- name: Copy over YARA active response script
+  ansible.builtin.copy: 
+    src: configs/yara.sh
+    dest: /var/ossec/active-response/bin/yara.sh
+    owner: root
+    group: wazuh 
+    mode: '0750'
+
 - name: Linux | Ensure Wazuh Agent service is started and enabled
   service:
     name: wazuh-agent
