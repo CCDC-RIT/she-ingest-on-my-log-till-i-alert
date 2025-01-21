@@ -55,7 +55,7 @@ wazuh_agent_address: '{{ "any" if wazuh_agent_nat else ansible_default_ipv4.addr
 # List of managers. The first one with register variable declared *and* set to true
 # is the one used to register the agent. Otherwise, the first one in the list will be used.
 wazuh_managers:
-  - address: 127.0.0.1
+  - address: {{ manager_ip }}
     port: 1514
     protocol: tcp
     api_port: 55000
@@ -117,7 +117,7 @@ wazuh_agent_client_buffer:
 
 ## Rootcheck
 wazuh_agent_rootcheck:
-  frequency: 43200
+  frequency: 1800
 
 ## Wodles
 wazuh_agent_openscap:
@@ -138,7 +138,7 @@ wazuh_agent_cis_cat:
   ciscat_path_win: 'C:\cis-cat'
 
 wazuh_agent_osquery:
-  disable: 'yes'
+  disable: 'no'
   run_daemon: 'yes'
   bin_path_win: 'C:\Program Files\osquery\osqueryd'
   log_path: '/var/log/osquery/osqueryd.results.log'
@@ -149,7 +149,7 @@ wazuh_agent_osquery:
 
 wazuh_agent_syscollector:
   disable: 'no'
-  interval: '1h'
+  interval: '20m'
   scan_on_start: 'yes'
   hardware: 'yes'
   os: 'yes'
@@ -170,7 +170,7 @@ wazuh_agent_sca:
 
 ## Syscheck
 wazuh_agent_syscheck:
-  frequency: 43200
+  frequency: 1200
   scan_on_start: 'yes'
   auto_ignore: 'no'
   win_audit_interval: 60
@@ -197,6 +197,9 @@ wazuh_agent_syscheck:
     - /etc/cups/certs
     - /etc/dumpdates
     - /etc/svc/volatile
+    - /home/*/snap/
+    - /home/*/cache/
+    - /home/*/mozilla/ 
   ignore_linux_type:
     - '.log$|.swp$'
   ignore_win:
@@ -204,10 +207,16 @@ wazuh_agent_syscheck:
   no_diff:
     - /etc/ssl/private.key
   directories:
-    - dirs: /etc,/usr/bin,/usr/sbin
+    - dirs: /etc,/home
       checks: ''
-    - dirs: /bin,/sbin,/boot
-      checks: ''
+    - dirs: /bin,/sbin,/boot,/usr/bin,/usr/sbin
+      checks: 'realtime="yes"'
+    - dirs: /root
+      checks: 'realtime="yes"'
+    - dirs: /tmp,/var/www
+      checks: 'realtime="yes"'
+    - dirs: /usr/lib/systemd/system,/usr/local/lib/systemd/system,/lib/systemd/system/
+      checks: 'realtime="yes"'
   macos_directories:
     - dirs: /etc,/usr/bin,/usr/sbin
       checks: ''
@@ -315,6 +324,10 @@ wazuh_agent_localfiles:
       command: netstat -tulpn | sed 's/\([[:alnum:]]\+\)\ \+[[:digit:]]\+\ \+[[:digit:]]\+\ \+\(.*\):\([[:digit:]]*\)\ \+\([0-9\.\:\*]\+\).\+\ \([[:digit:]]*\/[[:alnum:]\-]*\).*/\1 \2 == \3 == \4 \5/' | sort -k 4 -g | sed 's/ == \(.*\) ==/:\1/' | sed 1,2d
       alias: 'netstat listening ports'
       frequency: '360'
+    - format: 'command'
+      command: ps -ef | grep "[/]etc/rc.local" | awk '{print $3}'
+      alias: 'ppid of rc_local'
+      frequency: '180'
   macos:
     - format: 'full_command'
       command: netstat -an | awk '{if ((/^(tcp|udp)/) && ($4 != "*.*") && ($5 == "*.*")) {print $1" "$4" "$5}}' | sort -u
