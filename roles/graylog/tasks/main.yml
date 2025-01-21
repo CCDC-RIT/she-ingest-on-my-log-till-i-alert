@@ -24,7 +24,7 @@
     name:
       - graylog-datanode
       - graylog-server
-      - mongodb
+      - mongodb-org
     state: present
   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages and 'mongodb' not in ansible_facts.packages"
 

@@ -1,109 +1,28 @@
 ---
-# - name: Enroll agent using manager IP address
-#   replace:
-#     path: /var/ossec/etc/ossec.conf
-#     regexp: 'MANAGER_IP' # TODO check if this line exists
-#     replace: "{{ manager_ip }}"
-# TODO: rewrite for package managers other than apt
-- name: Install curl
-  ansible.builtin.package:
-    name: curl
-    state: present
 
-- name: Copy Wazuh GPG key
-  ansible.builtin.copy:
-    src: GPG-KEY-WAZUH
-    dest: /tmp/GPG-KEY-WAZUH
-    mode: 0644
+- include_vars: ../vars/repo_vars.yml
 
-- name: Ensure the keyring directory exists
-  ansible.builtin.file:
-    path: /usr/share/keyrings
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
+- include_vars: ../vars/repo.yml
+  when: packages_repository == 'production'
 
-- name: Create an empty keyring file if it doesn't exist
-  ansible.builtin.file:
-    path: /usr/share/keyrings/wazuh.gpg
-    state: touch
-    mode: 0644
+- include_vars: ../vars/repo_pre-release.yml
+  when: packages_repository == 'pre-release'
 
-- name: Import Wazuh GPG key
-  ansible.builtin.command: 
-    cmd: gpg --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import /tmp/GPG-KEY-WAZUH
+- include_vars: ../vars/repo_staging.yml
+  when: packages_repository == 'staging'
 
-- name: Create Wazuh sources list file
-  ansible.builtin.file: 
-    path: /etc/apt/sources.list.d/wazuh.list
-    state: touch
-    mode: 0644
+- name: Overlay wazuh_agent_config on top of defaults
+  set_fact:
+    wazuh_agent_config: '{{ wazuh_agent_config_defaults | combine(config_layer, recursive=True) }}'
+  vars:
+    config_layer: '{{ wazuh_agent_config | default({}) }}'
+  when: wazuh_agent_config_overlay | bool
 
-- name: Add wazuh repository to sources.list
-  ansible.builtin.lineinfile:
-    path: /etc/apt/sources.list.d/wazuh.list
-    line: "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main"
-    state: present
+- include_tasks: "Windows.yml"
+  when: ansible_os_family == "Windows"
 
-- name: Update apt package index
-  ansible.builtin.apt:
-    update_cache: yes
+- include_tasks: "Linux.yml"
+  when: ansible_system == "Linux"
 
-- name: Install Wazuh agent using environment variable
-  ansible.builtin.shell: 
-    cmd: WAZUH_MANAGER="{{ manager_ip }}" apt-get install -y wazuh-agent 
-
-- name: Copy over Packetbeat install script
-  ansible.builtin.copy:
-    src: packetbeat.sh
-    dest: /tmp/packetbeat.sh
-    mode: 0755
-
-- name: Run Packetbeat install script 
-  ansible.builtin.command:
-    cmd: bash /tmp/packetbeat.sh 
-
-- name: Install YARA and git
-  ansible.builtin.package:
-    name: 
-      - yara
-      - git
-      - snoopy
-    state: present
-
-- name: Create /opt/yara/rules directory
-  ansible.builtin.file:
-    path: /opt/yara/rules
-    state: directory
-    mode: '0755'
-
-- name: Copy over compiled YARA rules
-  ansible.builtin.copy:
-    src: compiled.linux
-    dest: /opt/yara/rules/compiled.linux
-    owner: root
-    group: wazuh
-    mode: '0660'
-
-- name: Copy over YARA active response script
-  ansible.builtin.copy: 
-    src: configs/yara.sh
-    dest: /var/ossec/active-response/bin/yara.sh
-    owner: root
-    group: wazuh 
-    mode: '0750'
-
-- name: Reload systemd daemon
-  ansible.builtin.systemd:
-    daemon_reload: yes
-
-- name: Enable Wazuh agent service
-  ansible.builtin.systemd:
-    name: wazuh-agent
-    enabled: yes
-
-- name: Restart Wazuh agent service
-  ansible.builtin.systemd:
-    name: wazuh-agent
-    state: restarted
+- include_tasks: "macOS.yml"
+  when: ansible_system == "Darwin"
