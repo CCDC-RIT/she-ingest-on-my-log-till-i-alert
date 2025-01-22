@@ -18,7 +18,6 @@
       - name: wazuh_password
         prompt: Enter Wazuh admin password
         private: true
-        encrypt: sha256_crypt
         confirm: true
         salt_size: 7
 
@@ -51,7 +50,6 @@
     - name: root_password
       prompt: Enter graylog root password
       private: true
-      encrypt: sha256_crypt
       confirm: true
       salt_size: 7
     - name: wazuh_password

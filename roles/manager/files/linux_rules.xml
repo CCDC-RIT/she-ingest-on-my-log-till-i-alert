@@ -12,7 +12,7 @@
 -->
 
 <!--File Integrity Monitoring-->
-<group name="syscheck,">
+<group name="syscheck">
     <rule id="100001" level="8">
         <if_sid>550</if_sid>
         <field name="file">.sh$</field>
@@ -26,7 +26,7 @@
     <!--SSH persistence-->
     <rule id="100002" level="10">
         <if_sid>554</if_sid>
-        <field name="file" type="pcre2">\/authorized_keys$</field>
+        <field name="file" type="pcre2">/authorized_keys$</field>
         <description>SSH authorized_keys file "$(file)" has been added</description>
         <mitre>
             <id>T1098.004</id>
@@ -34,7 +34,7 @@
     </rule>
     <rule id="100003" level="10">
         <if_sid>550</if_sid>
-        <field name="file" type="pcre2">\/authorized_keys$</field>
+        <field name="file" type="pcre2">/authorized_keys$</field>
         <description>SSH authorized_keys file "$(file)" has been modified</description>
         <mitre>
             <id>T1098.004</id>
@@ -42,7 +42,7 @@
     </rule>
     <rule id="100004" level="10">
         <if_sid>550</if_sid>
-        <field name="file" type="pcre2">\/sshd_config$</field>
+        <field name="file" type="pcre2">/sshd_config$</field>
         <description>SSH config file "$(file)" has been modified</description>
         <mitre>
             <id>T1098.004</id>
@@ -76,7 +76,7 @@
     <!--Accounts and shells-->
     <rule id="100008" level="10">
         <if_sid>550</if_sid>
-        <field name="file" type="pcre2">\/etc\/passwd$|\/etc\/shadow$|\/etc\/gshadow$|\/etc\/group$|\/etc\/login.defs$</field>
+        <field name="file" type="pcre2">/etc/passwd$|/etc/shadow$|/etc/gshadow$|/etc/group$|/etc/login.defs$</field>
         <description>[File "$(file)" has been modified]: Possible local account manipulation</description>
         <mitre>
             <id>T1136.001</id>
@@ -85,7 +85,7 @@
     </rule>
         <rule id="100009" level="10">
         <if_sid>554</if_sid>
-        <field name="file" type="pcre2">\/etc\/profile$|\/etc/profile.d\/|\/etc\/bash.bashrc$|\/etc\/bash.bash_logout$|.bash_profile$|.bash_login$|.profile$|.bash_profile$|.bashrc$|.bash_logout$</field>
+        <field name="file" type="pcre2">/etc/profile$|/etc/profile.d/|/etc/bash.bashrc$|/etc/bash.bash_logout$|.bash_profile$|.bash_login$|.profile$|.bash_profile$|.bashrc$|.bash_logout$</field>
         <description>Unix shell config "$(file)" has been added</description>
         <mitre>
             <id>T1546.004</id>
@@ -93,7 +93,7 @@
     </rule>
     <rule id="100010" level="10">
         <if_sid>550</if_sid>
-        <field name="file" type="pcre2">\/etc\/profile$|\/etc/profile.d\/|\/etc\/bash.bashrc$|\/etc\/bash.bash_logout$|.bash_profile$|.bash_login$|.profile$|.bash_profile$|.bashrc$|.bash_logout$</field>
+        <field name="file" type="pcre2">/etc/profile$|/etc/profile.d/|/etc/bash.bashrc$|/etc/bash.bash_logout$|.bash_profile$|.bash_login$|.profile$|.bash_profile$|.bashrc$|.bash_logout$</field>
         <description>Unix shell config "$(file)" has been modified</description>
         <mitre>
             <id>T1546.004</id>
@@ -109,7 +109,7 @@
     </rule>
     <rule id="100012" level="12">
         <if_sid>554</if_sid>
-        <field name="file" type="pcre2">\/systemd\/system\/.*\.timer$|\/systemd\/system\/.*\.service$</field>
+        <field name="file" type="pcre2">/systemd/system/.*\.timer$|/systemd/system/.*\.service$</field>
         <description>[Systemd "$(file)" has been added]: Possible task/job scheduling</description>
         <mitre>
         <id>T1053.006</id>
@@ -117,7 +117,7 @@
     </rule>
     <rule id="100013" level="12">
         <if_sid>550</if_sid>
-        <field name="file" type="pcre2">\/systemd\/system\/.*\.timer$|\/systemd\/system\/.*\.service$</field>
+        <field name="file" type="pcre2">/systemd/system/.*\.timer$|/systemd/system/.*\.service$</field>
         <description>[Systemd "$(file)" has been modified]: Possible task/job scheduling</description>
         <mitre>
         <id>T1053.006</id>
@@ -216,7 +216,7 @@
 
     <rule id="100028" level="12">
       <if_sid>550, 554</if_sid>
-      <field name="file" type="pcre2">^\/var\/spool\/cron\/crontabs</field>
+      <field name="file" type="pcre2">^/var/spool/cron/crontabs</field>
       <description>Cron job has been modified for user "$(uname)". The following modification was made: "$(changed_content)"</description>
       <mitre>
         <id>T1053.003</id>
@@ -290,7 +290,7 @@
         <description>netcat listening for incoming connections.</description>
     </rule>
     <rule id="105005" level="12">
-        <regex type="pcre2">(?i)name="\/usr\/bin\/pkexec".*="root"|https:\/\/raw\.githubusercontent\.com.*PwnKit|pwnkit</regex>
+        <regex type="pcre2">(?i)name="/usr/bin/pkexec".*="root"|https://raw\.githubusercontent\.com.*PwnKit|pwnkit</regex>
         <description>Possible attempt to exploit a local privilege escalation in polkit pkexec (CVE-2021-4034) via unsecure environment variable injection.</description>
         <mitre>
         <id>T1068</id>
@@ -1173,163 +1173,130 @@
   </rule>
 </group>
 
-<group name='syscheck,'>
-    <rule id='100200' level='7'>
+<group name="syscheck">
+  <rule id='100200' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/root\/'.*</field>
+    <field name='file' type='pcre2'>^'/root/'.*</field>
     <description>File modified: $(file)</description>
-    </rule>
+  </rule>
   
 
-    <rule id='100201' level='7'>
+  <rule id='100201' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/root\/'.*</field>
+    <field name='file' type='pcre2'>^'/root/'.*</field>
     <description>File added: $(file)</description>
-    </rule>
-</group>
-    
+  </rule>
 
-<group name='syscheck,'>
-    <rule id='100202' level='7'>
+  <rule id='100202' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/home\/'.*</field>
+    <field name='file' type='pcre2'>^'/home/'.*</field>
     <description>File modified: $(file)</description>
-    </rule>
+  </rule>
   
 
-    <rule id='100203' level='7'>
+  <rule id='100203' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/home\/'.*</field>
+    <field name='file' type='pcre2'>^'/home/'.*</field>
     <description>File added: $(file)</description>
-    </rule>
-</group>
-    
+  </rule>
 
-<group name='syscheck,'>
-    <rule id='100204' level='7'>
+  <rule id='100204' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/bin\/'.*</field>
+    <field name='file' type='pcre2'>^'/bin/'.*</field>
     <description>File modified: $(file)</description>
-    </rule>
+  </rule>
+
+  <rule id='100205' level='7'>
+    <if_sid>554</if_sid>
+    <field name='file' type='pcre2'>^'/bin/'.*</field>
+    <description>File added: $(file)</description>
+  </rule>
+ 
+  <rule id='100206' level='7'>
+    <if_sid>550</if_sid>
+    <field name='file' type='pcre2'>^'/sbin/'.*</field>
+    <description>File modified: $(file)</description>
+  </rule>
+  
+  <rule id='100207' level='7'>
+    <if_sid>554</if_sid>
+    <field name='file' type='pcre2'>^'/sbin/'.*</field>
+    <description>File added: $(file)</description>
+  </rule>    
+
+  <rule id='100208' level='7'>
+    <if_sid>550</if_sid>
+    <field name='file' type='pcre2'>^'/usr/bin/'.*</field>
+    <description>File modified: $(file)</description>
+  </rule>
+  
+  <rule id='100209' level='7'>
+    <if_sid>554</if_sid>
+    <field name='file' type='pcre2'>^'/usr/bin/'.*</field>
+    <description>File added: $(file)</description>
+  </rule>
+
+  <rule id='100210' level='7'>
+    <if_sid>550</if_sid>
+    <field name='file' type='pcre2'>^'/usr/sbin/'.*</field>
+    <description>File modified: $(file)</description>
+  </rule>
+
+
+  <rule id='100211' level='7'>
+    <if_sid>554</if_sid>
+    <field name='file' type='pcre2'>^'/usr/sbin/'.*</field>
+    <description>File added: $(file)</description>
+  </rule>
+
+  <rule id='100212' level='7'>
+    <if_sid>550</if_sid>
+    <field name='file' type='pcre2'>^'/etc/'.*</field>
+    <description>File modified: $(file)</description>
+  </rule>
+  
+  <rule id='100213' level='7'>
+    <if_sid>554</if_sid>
+    <field name='file' type='pcre2'>^'/etc/'.*</field>
+    <description>File added: $(file)</description>
+  </rule>
+
+  <rule id='100214' level='7'>
+    <if_sid>550</if_sid>
+    <field name='file' type='pcre2'>^'/tmp/'.*</field>
+    <description>File modified: $(file)</description>
+  </rule>
   
 
-    <rule id='100205' level='7'>
+  <rule id='100215' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/bin\/'.*</field>
+    <field name='file' type='pcre2'>^'/tmp/'.*</field>
     <description>File added: $(file)</description>
-    </rule>
-</group>
-    
+  </rule>
 
-<group name='syscheck,'>
-    <rule id='100206' level='7'>
+  <rule id='100216' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/sbin\/'.*</field>
+    <field name='file' type='pcre2'>^'/var/tmp/'.*</field>
     <description>File modified: $(file)</description>
-    </rule>
+  </rule>
   
-
-    <rule id='100207' level='7'>
+  <rule id='100217' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/sbin\/'.*</field>
+    <field name='file' type='pcre2'>^'/var/tmp/'.*</field>
     <description>File added: $(file)</description>
-    </rule>
-</group>
-    
+  </rule>    
 
-<group name='syscheck,'>
-    <rule id='100208' level='7'>
+  <rule id='100218' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/usr\/bin\/'.*</field>
+    <field name='file' type='pcre2'>^'/var/www/'.*</field>
     <description>File modified: $(file)</description>
-    </rule>
+  </rule>
   
-
-    <rule id='100209' level='7'>
+  <rule id='100219' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/usr\/bin\/'.*</field>
+    <field name='file' type='pcre2'>^'/var/www/'.*</field>
     <description>File added: $(file)</description>
-    </rule>
-</group>
-    
-
-<group name='syscheck,'>
-    <rule id='100210' level='7'>
-    <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/usr\/sbin\/'.*</field>
-    <description>File modified: $(file)</description>
-    </rule>
-  
-
-    <rule id='100211' level='7'>
-    <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/usr\/sbin\/'.*</field>
-    <description>File added: $(file)</description>
-    </rule>
-</group>
-    
-
-<group name='syscheck,'>
-    <rule id='100212' level='7'>
-    <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/etc\/'.*</field>
-    <description>File modified: $(file)</description>
-    </rule>
-  
-
-    <rule id='100213' level='7'>
-    <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/etc\/'.*</field>
-    <description>File added: $(file)</description>
-    </rule>
-</group>
-    
-
-<group name='syscheck,'>
-    <rule id='100214' level='7'>
-    <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/tmp\/'.*</field>
-    <description>File modified: $(file)</description>
-    </rule>
-  
-
-    <rule id='100215' level='7'>
-    <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/tmp\/'.*</field>
-    <description>File added: $(file)</description>
-    </rule>
-</group>
-    
-
-<group name='syscheck,'>
-    <rule id='100216' level='7'>
-    <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/var\/tmp\/'.*</field>
-    <description>File modified: $(file)</description>
-    </rule>
-  
-
-    <rule id='100217' level='7'>
-    <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/var\/tmp\/'.*</field>
-    <description>File added: $(file)</description>
-    </rule>
-</group>
-    
-
-<group name='syscheck,'>
-    <rule id='100218' level='7'>
-    <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'\/var\/www\/'.*</field>
-    <description>File modified: $(file)</description>
-    </rule>
-  
-
-    <rule id='100219' level='7'>
-    <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'\/var\/www\/'.*</field>
-    <description>File added: $(file)</description>
-    </rule>
+  </rule>
 </group>
     
 

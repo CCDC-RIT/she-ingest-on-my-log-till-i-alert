@@ -3,39 +3,39 @@
 - name: Check installed packages
   ansible.builtin.package_facts:
 
-# - name: Add Graylog GPG key
-#   apt_key:
-#     url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"
-#     state: present
-#   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+- name: Add Graylog GPG key
+  apt_key:
+    url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"
+    state: present
+  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
 
-# - name: Download and install Graylog repository
-#   apt:
-#     deb: "https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb" #keep locally
-#     state: present
-#   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+- name: Download and install Graylog repository
+  apt:
+    deb: "https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb" #keep locally
+    state: present
+  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
 
-# - name: Download MongoDB GPG key
-#   ansible.builtin.get_url:
-#     url: https://www.mongodb.org/static/pgp/server-8.0.asc
-#     dest: /tmp/mongodb-server-8.0.asc
+- name: Download MongoDB GPG key
+  ansible.builtin.get_url:
+    url: https://www.mongodb.org/static/pgp/server-8.0.asc
+    dest: /tmp/mongodb-server-8.0.asc
 
-# - name: Add MongoDB GPG key to keyrings
-#   ansible.builtin.command:
-#     cmd: gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg /tmp/mongodb-server-8.0.asc
-#   become: true
+- name: Add MongoDB GPG key to keyrings
+  ansible.builtin.command:
+    cmd: gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg /tmp/mongodb-server-8.0.asc
+  become: true
 
-# - name: create sources.list entry for mongodb
-#   ansible.builtin.file:
-#     path: /etc/apt/sources.list.d/mongodb-org-8.0.list
-#     state: touch
-#     mode: 0644
+- name: create sources.list entry for mongodb
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/mongodb-org-8.0.list
+    state: touch
+    mode: 0644
 
-# - name: create sources.list entry for mongodb
-#   ansible.builtin.lineinfile:
-#     path: /etc/apt/sources.list.d/mongodb-org-8.0.list
-#     line: "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" 
-#     state: present
+- name: create sources.list entry for mongodb
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/mongodb-org-8.0.list
+    line: "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" 
+    state: present
 
 - name: Update package cache
   apt:
