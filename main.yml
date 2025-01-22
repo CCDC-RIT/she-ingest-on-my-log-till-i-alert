@@ -14,23 +14,20 @@
     - wazuh
     - manager
     - never
+  vars_prompt:
+      - name: wazuh_password
+        prompt: Enter Wazuh admin password
+        private: true
+        encrypt: sha256_crypt
+        confirm: true
+        salt_size: 7
 
-# - name: Install Wazuh Agents
-#   hosts: linux
-#   become: yes
-#   roles: 
-#     - agent
-#   tags:
-#     - logging
-#     - wazuh
-#     - agent
-#     - never
 
 - name: Install Wazuh Agents
   hosts: linux
   become: yes
   roles: 
-    - ansible-wazuh-agent
+    - agent
   tags:
     - logging
     - wazuh
@@ -55,6 +52,11 @@
       prompt: Enter graylog root password
       private: true
       encrypt: sha256_crypt
+      confirm: true
+      salt_size: 7
+    - name: wazuh_password
+      prompt: Enter wazuh admin password
+      private: true
       confirm: true
       salt_size: 7
 

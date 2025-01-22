@@ -3,17 +3,39 @@
 - name: Check installed packages
   ansible.builtin.package_facts:
 
-- name: Add Graylog GPG key
-  apt_key:
-    url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"
-    state: present
-  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+# - name: Add Graylog GPG key
+#   apt_key:
+#     url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"
+#     state: present
+#   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
 
-- name: Download and install Graylog repository
-  apt:
-    deb: "https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb" #keep locally
-    state: present
-  # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+# - name: Download and install Graylog repository
+#   apt:
+#     deb: "https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb" #keep locally
+#     state: present
+#   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+
+# - name: Download MongoDB GPG key
+#   ansible.builtin.get_url:
+#     url: https://www.mongodb.org/static/pgp/server-8.0.asc
+#     dest: /tmp/mongodb-server-8.0.asc
+
+# - name: Add MongoDB GPG key to keyrings
+#   ansible.builtin.command:
+#     cmd: gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg /tmp/mongodb-server-8.0.asc
+#   become: true
+
+# - name: create sources.list entry for mongodb
+#   ansible.builtin.file:
+#     path: /etc/apt/sources.list.d/mongodb-org-8.0.list
+#     state: touch
+#     mode: 0644
+
+# - name: create sources.list entry for mongodb
+#   ansible.builtin.lineinfile:
+#     path: /etc/apt/sources.list.d/mongodb-org-8.0.list
+#     line: "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" 
+#     state: present
 
 - name: Update package cache
   apt:
@@ -24,6 +46,8 @@
     name:
       - graylog-datanode
       - graylog-server
+      - gnupg
+      - curl
       - mongodb-org
     state: present
   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages and 'mongodb' not in ansible_facts.packages"
@@ -50,21 +74,42 @@
     state: present 
 
 - name: Generate password_secret
-  command: pwgen -N 1 -s 96
+  command: pwgen -A -N 1 -s 96
   register: password_secret
 
+- name: Debug password_secret
+  debug:
+    var: password_secret.stdout
+
 - name: Set password_secret in datanode.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/graylog/datanode/datanode.conf
-    regexp: '^password_secret='
-    line: "password_secret={{ password_secret.stdout }}"
+    regexp: '^password_secret ?='
+    line: "password_secret ='{{ password_secret.stdout }}'"
     state: present
 
-- name: Set root_password_sha2 in server.conf
-  lineinfile:
+- name: Set password_secret in server.conf
+  ansible.builtin.lineinfile:
     path: /etc/graylog/server/server.conf
-    regexp: '^root_password_sha2='
-    line: "root_password_sha2={{ root_password | password_hash('sha256') }}"
+    regexp: '^password_secret ?='
+    line: "password_secret ='{{ password_secret.stdout }}'"
+    state: present
+
+- name: Set root_password_sha2 in datanode.conf
+  ansible.builtin.lineinfile:
+    path: /etc/graylog/datanode/datanode.conf
+    regexp: '^root_password_sha2 ='
+    line: "root_password_sha2 ={{ root_password | password_hash('sha256') }}"
+    state: present
+    owner: graylog
+    group: graylog
+    mode: '0640'
+
+- name: Set root_password_sha2 in server.conf
+  ansible.builtin.lineinfile:
+    path: /etc/graylog/server/server.conf
+    regexp: '^root_password_sha2 ='
+    line: "root_password_sha2 ={{ root_password | password_hash('sha256') }}"
     state: present
     owner: graylog
     group: graylog
@@ -74,7 +119,7 @@
   lineinfile:
     path: /etc/graylog/server/server.conf
     regexp: '^elasticsearch_hosts='
-    line: "elasticsearch_hosts=https://user:pass@wazuh-indexerhostname:9200"
+    line: "elasticsearch_hosts=https://admin:{{ wazuh_password }}@{{ manager_ip }}:9200"
     state: present
 
 - name: Enable and start Graylog Server

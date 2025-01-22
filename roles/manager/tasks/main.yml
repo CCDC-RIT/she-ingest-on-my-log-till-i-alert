@@ -11,33 +11,31 @@
     cmd: bash /tmp/wazuh-install.sh -a -i -o
   args:
     creates: /var/ossec
+    
+- name: Create the keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
 
-# - name: Install osquery
-#   hosts: all
-#   become: yes
-#   tasks:
-#     - name: Create keyrings directory
-#       ansible.builtin.file:
-#         path: /etc/apt/keyrings
-#         state: directory
+- name: Download the osquery GPG key
+  ansible.builtin.get_url:
+    url: https://pkg.osquery.io/deb/pubkey.gpg
+    dest: /etc/apt/keyrings/osquery.asc
+    mode: '0644'
 
-#     - name: Download osquery GPG key
-#       ansible.builtin.command:
-#         cmd: curl -L https://pkg.osquery.io/deb/pubkey.gpg | tee /etc/apt/keyrings/osquery.asc
+- name: Add the osquery repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/osquery.asc] https://pkg.osquery.io/deb deb main"
+    state: present
 
-
-#     - name: Add osquery repository
-#       ansible.builtin.command:
-#         cmd: echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/osquery.asc] https://pkg.osquery.io/deb deb main" | tee -a /etc/apt/sources.list.d/osquery.list
-
-#     - name: Update apt package index
-#       ansible.builtin.apt:
-#         update_cache: yes
-
-#     - name: Install osquery
-#       ansible.builtin.apt:
-#         name: osquery
-#         state: present
+- name: Install osquery
+  ansible.builtin.apt:
+    name: osquery
+    state: present
+    update_cache: true
 
 - name: Copy the Wazuh password changing utility
   ansible.builtin.copy:
@@ -49,7 +47,7 @@
 
 - name: Run the Wazuh password changing script
   ansible.builtin.shell:
-    cmd: bash /tmp/wazuh-passwords-tool.sh -a > /var/ossec/etc/wazuh-passwords.txt
+    cmd: bash /tmp/wazuh-passwords-tool.sh -u admin -p "{{ wazuh_password }}"
   args:
     creates: /var/ossec/etc/wazuh-passwords.txt
 
@@ -74,10 +72,10 @@
       modprobe:
     dest: /var/ossec/etc/lists/kernel_control_commands
 
-    # - name: Copy osquery.conf
-    #   ansible.builtin.copy:
-    #     src: configs/osquery.conf
-    #     dest: /etc/osquery/osquery.conf
+- name: Copy osquery.conf
+  ansible.builtin.copy:
+    src: osquery.conf
+    dest: /etc/osquery/osquery.conf
 
 - name: Memory locking
   ansible.builtin.lineinfile:
@@ -172,29 +170,11 @@
   ansible.builtin.command:
     cmd: bash /tmp/fluentbitinstall.sh 
 
-- name: Replace configuration lines in Fluent Bit configuration file #TODO replace with template
-  ansible.builtin.blockinfile:
-    path: /etc/fluent-bit/fluent-bit.conf
-    marker: ""
-    block: |
-      [INPUT]
-          name  tail
-          path  /var/ossec/logs/alerts/alerts.json
-          tag wazuh
-          parser  json
-          Buffer_Max_Size 5MB
-          Buffer_Chunk_Size 400k
-          storage.type      filesystem
-          Mem_Buf_Limit     512MB
-      [OUTPUT]
-          Name  tcp
-          Host  {{ graylog_ip }}
-          Port  {{ graylog_port }}
-          net.keepalive off
-          Match wazuh
-          Format  json_lines
-          json_date_key true
-  # state: present
+- name: Install fluentbit configuration 
+  template:
+    src: fluentbit.conf.j2
+    dest: /etc/fluent-bit/fluent-bit.conf
+    mode: 0644
 
 - name: Enable and restart Wazuh Indexer
   systemd:
