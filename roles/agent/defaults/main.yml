@@ -200,9 +200,6 @@ wazuh_agent_syscheck:
     - /home/*/snap/
     - /home/*/cache/
     - /home/*/mozilla/ 
-    - '^/home/[^/]+/snap/.*$'      
-    - '^/home/[^/]+/\.cache/.*$'   
-    - '^/home/[^/]+/\.mozilla/.*$' 
   ignore_linux_type:
     - '.log$|.swp$'
   ignore_win:
