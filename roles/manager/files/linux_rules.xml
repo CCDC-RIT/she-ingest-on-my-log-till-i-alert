@@ -1176,125 +1176,124 @@
 <group name="syscheck">
   <rule id='100200' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/root/'.*</field>
+    <field name='file'>/root/</field>
     <description>File modified: $(file)</description>
   </rule>
   
-
   <rule id='100201' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/root/'.*</field>
+    <field name='file'>/root/</field>
     <description>File added: $(file)</description>
   </rule>
 
   <rule id='100202' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/home/'.*</field>
+    <field name='file'>/home/</field>
     <description>File modified: $(file)</description>
   </rule>
   
 
   <rule id='100203' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/home/'.*</field>
+    <field name='file'>/home/</field>
     <description>File added: $(file)</description>
   </rule>
 
   <rule id='100204' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/bin/'.*</field>
+    <field name='file'>/bin/</field>
     <description>File modified: $(file)</description>
   </rule>
 
   <rule id='100205' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/bin/'.*</field>
+    <field name='file'>/bin/</field>
     <description>File added: $(file)</description>
   </rule>
  
   <rule id='100206' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/sbin/'.*</field>
+    <field name='file'>/sbin/</field>
     <description>File modified: $(file)</description>
   </rule>
   
   <rule id='100207' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/sbin/'.*</field>
+    <field name='file'>/sbin/</field>
     <description>File added: $(file)</description>
   </rule>    
 
   <rule id='100208' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/usr/bin/'.*</field>
+    <field name='file'>/usr/bin/</field>
     <description>File modified: $(file)</description>
   </rule>
   
   <rule id='100209' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/usr/bin/'.*</field>
+    <field name='file'>/usr/bin/</field>
     <description>File added: $(file)</description>
   </rule>
 
   <rule id='100210' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/usr/sbin/'.*</field>
+    <field name='file'>/usr/sbin/</field>
     <description>File modified: $(file)</description>
   </rule>
 
 
   <rule id='100211' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/usr/sbin/'.*</field>
+    <field name='file'>/usr/sbin/</field>
     <description>File added: $(file)</description>
   </rule>
 
   <rule id='100212' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/etc/'.*</field>
+    <field name='file'>/etc/</field>
     <description>File modified: $(file)</description>
   </rule>
   
   <rule id='100213' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/etc/'.*</field>
+    <field name='file'>/etc/</field>
     <description>File added: $(file)</description>
   </rule>
 
   <rule id='100214' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/tmp/'.*</field>
+    <field name='file'>/tmp/</field>
     <description>File modified: $(file)</description>
   </rule>
   
 
   <rule id='100215' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/tmp/'.*</field>
+    <field name='file'>/tmp/</field>
     <description>File added: $(file)</description>
   </rule>
 
   <rule id='100216' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/var/tmp/'.*</field>
+    <field name='file'>/var/tmp/</field>
     <description>File modified: $(file)</description>
   </rule>
   
   <rule id='100217' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/var/tmp/'.*</field>
+    <field name='file'>/var/tmp/</field>
     <description>File added: $(file)</description>
   </rule>    
 
   <rule id='100218' level='7'>
     <if_sid>550</if_sid>
-    <field name='file' type='pcre2'>^'/var/www/'.*</field>
+    <field name='file'>/var/www/</field>
     <description>File modified: $(file)</description>
   </rule>
   
   <rule id='100219' level='7'>
     <if_sid>554</if_sid>
-    <field name='file' type='pcre2'>^'/var/www/'.*</field>
+    <field name='file'>/var/www/</field>
     <description>File added: $(file)</description>
   </rule>
 </group>
