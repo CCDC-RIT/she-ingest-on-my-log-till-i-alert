@@ -6,6 +6,12 @@
     dest: /tmp/wazuh-install.sh
     mode: '0755'
 
+- name: Set manager IP in script
+  ansible.builtin.replace:
+    path: /tmp/wazuh-install.sh
+    regexp: "MANAGERIPHERE"
+    replace: "{{ manager_ip }}"
+
 - name: Run the Wazuh install script
   ansible.builtin.command:
     cmd: bash /tmp/wazuh-install.sh -a -i -o

@@ -94,17 +94,16 @@ config_file_certificate_config="nodes:
     - name: dashboard-3
       ip: \"<dashboard-node-ip>\""
 
-config_file_certificate_config_aio: |
-  nodes:
-    indexer:
-      - name: wazuh-indexer
-        ip: "{{ manager_ip }}"
-    server:
-      - name: wazuh-server
-        ip: "{{ manager_ip }}"
-    dashboard:
-      - name: wazuh-dashboard
-        ip: "{{ manager_ip }}"
+config_file_certificate_config_aio="nodes:
+  indexer:
+    - name: wazuh-indexer
+      ip: MANAGERIPHERE
+  server:
+    - name: wazuh-server
+      ip: MANAGERIPHERE
+  dashboard:
+    - name: wazuh-dashboard
+      ip: MANAGERIPHERE"
 
 config_file_dashboard_dashboard="server.host: \"<kibana-ip>\"
 opensearch.hosts: https://<elasticsearch-ip>:9200
