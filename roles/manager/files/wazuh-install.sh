@@ -138,7 +138,7 @@ uiSettings.overrides.defaultRoute: /app/wz-home
 opensearch_security.cookie.secure: true"
 
 config_file_dashboard_dashboard_unattended="server.host: 0.0.0.0
-opensearch.hosts: https://127.0.0.1:9200
+opensearch.hosts: https://MANAGERIPHERE:9200
 server.port: 443
 opensearch.ssl.verificationMode: certificate
 # opensearch.username: kibanaserver
@@ -201,7 +201,7 @@ seccomp:
 
 config_file_filebeat_filebeat_all_in_one="# Wazuh - Filebeat configuration file
 output.elasticsearch:
-  hosts: [\"127.0.0.1:9200\"]
+  hosts: [\"MANAGERIPHERE:9200\"]
   protocol: https
   username: \${username}
   password: \${password}
@@ -304,7 +304,7 @@ seccomp:
 
 config_file_filebeat_filebeat_unattended="# Wazuh - Filebeat configuration file
 output.elasticsearch.hosts:
-        - 127.0.0.1:9200
+        - MANAGERIPHERE:9200
 #        - <elasticsearch_ip_node_2>:9200 
 #        - <elasticsearch_ip_node_3>:9200
 
@@ -383,7 +383,7 @@ path.logs: /var/log/elasticsearch
 ### Option to allow Filebeat-oss 7.10.2 to work ###
 compatibility.override_main_response_version: true"
 
-config_file_indexer_indexer_all_in_one="network.host: \"127.0.0.1\"
+config_file_indexer_indexer_all_in_one="network.host: \"MANAGERIPHERE\"
 node.name: \"node-1\"
 cluster.initial_master_nodes:
 - \"node-1\"
@@ -1268,7 +1268,7 @@ function dashboard_configure() {
             ip=${dashboard_node_ips[pos]}
         fi
 
-        if [[ "${ip}" != "127.0.0.1" ]]; then
+        if [[ "${ip}" != "MANAGERIPHERE" ]]; then
             echo "server.host: ${ip}" >> /etc/wazuh-dashboard/opensearch_dashboards.yml
         else
             echo 'server.host: '0.0.0.0'' >> /etc/wazuh-dashboard/opensearch_dashboards.yml
@@ -1677,7 +1677,7 @@ function indexer_initialize() {
     fi
 
     if [ -n "${AIO}" ]; then
-        eval "sudo -u wazuh-indexer JAVA_HOME=/usr/share/wazuh-indexer/jdk/ OPENSEARCH_CONF_DIR=/etc/wazuh-indexer /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /etc/wazuh-indexer/opensearch-security -icl -p 9200 -nhnv -cacert ${indexer_cert_path}/root-ca.pem -cert ${indexer_cert_path}/admin.pem -key ${indexer_cert_path}/admin-key.pem -h 127.0.0.1 ${debug}"
+        eval "sudo -u wazuh-indexer JAVA_HOME=/usr/share/wazuh-indexer/jdk/ OPENSEARCH_CONF_DIR=/etc/wazuh-indexer /usr/share/wazuh-indexer/plugins/opensearch-security/tools/securityadmin.sh -cd /etc/wazuh-indexer/opensearch-security -icl -p 9200 -nhnv -cacert ${indexer_cert_path}/root-ca.pem -cert ${indexer_cert_path}/admin.pem -key ${indexer_cert_path}/admin-key.pem -h MANAGERIPHERE ${debug}"
         if [  "${PIPESTATUS[0]}" != 0  ]; then
             common_logger -e "The Wazuh indexer cluster security configuration could not be initialized."
             installCommon_rollBack
