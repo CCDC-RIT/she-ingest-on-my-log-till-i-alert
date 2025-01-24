@@ -51,9 +51,22 @@
     group: wazuh
     mode: '0755'
 
-- name: Run the Wazuh password changing script
+# - name: Ensure indexer backup directory has the proper permissions
+#   ansible.builtin.file:
+#     path: /etc/wazuh-indexer/backup
+#     owner: wazuh-indexer
+#     group: wazuh-indexer
+#     mode: '0750'
+
+- name: Change all wazuh passwords
   ansible.builtin.shell:
-    cmd: bash /tmp/wazuh-passwords-tool.sh -u admin -p "{{ wazuh_password }}"
+    cmd: bash /tmp/wazuh-passwords-tool.sh -a > /var/ossec/etc/wazuh-passwords.txt
+  args:
+    creates: /var/ossec/etc/wazuh-passwords.txt
+        
+- name: Change the wazuh admin user password
+  ansible.builtin.shell:
+    cmd: bash /tmp/wazuh-passwords-tool.sh -u admin -p "{{ wazuh_password }}" -v
   args:
     creates: /var/ossec/etc/wazuh-passwords.txt
 
@@ -186,6 +199,7 @@
   systemd:
     name: wazuh-indexer.service
     enabled: true
+    daemon_reload: true
     state: restarted
 
 - name: Enable and restart Wazuh Manager
