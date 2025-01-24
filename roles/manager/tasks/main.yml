@@ -67,8 +67,6 @@
 - name: Change the wazuh admin user password
   ansible.builtin.shell:
     cmd: bash /tmp/wazuh-passwords-tool.sh -u admin -p "{{ wazuh_password }}" -v
-  args:
-    creates: /var/ossec/etc/wazuh-passwords.txt
 
 - name: Extract the Wazuh API password from the tar file
   ansible.builtin.shell: |
@@ -155,7 +153,7 @@
 - name: Fetch wazuh indexer cert 
   ansible.builtin.fetch:
     src: /etc/wazuh-indexer/certs/wazuh-indexer.pem
-    dest: /opt/wazuh-indexer.pem
+    dest: /tmp/wazuh-indexer.pem
     flat: yes
 
 - name: Copy Linux agent configs
@@ -272,5 +270,11 @@
 - name: Enable and restart Wazuh Dashboard
   systemd:
     name: wazuh-dashboard.service
+    enabled: true
+    state: restarted
+
+- name: Enable and restart Fluentbit
+  systemd:
+    name: fluent-bit.service
     enabled: true
     state: restarted

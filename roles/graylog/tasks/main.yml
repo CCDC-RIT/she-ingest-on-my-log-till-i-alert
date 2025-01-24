@@ -150,7 +150,7 @@
 
 - name: Fetch the Wazuh indexer certificate
   ansible.builtin.copy:
-    src: /opt/wazuh-indexer.pem
+    src: /tmp/wazuh-indexer.pem
     dest: /tmp/wazuh-indexer.pem
     owner: root
     group: root
