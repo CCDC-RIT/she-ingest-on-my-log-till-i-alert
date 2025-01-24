@@ -15,12 +15,14 @@
     - manager
     - never
   vars_prompt:
-      - name: wazuh_password
-        prompt: Enter Wazuh admin password
-        private: true
-        confirm: true
-        salt_size: 7
-
+    - name: wazuh_password
+      prompt: Enter Wazuh admin password
+      private: true
+      confirm: true
+    - name: wazuh_graylog_password
+      prompt: Enter password for Graylog user in Wazuh
+      private: true
+      confirm: true
 
 - name: Install Wazuh Agents
   hosts: linux
@@ -51,12 +53,10 @@
       prompt: Enter graylog root password
       private: true
       confirm: true
-      salt_size: 7
-    - name: wazuh_password
-      prompt: Enter wazuh admin password
+    - name: wazuh_graylog_password
+      prompt: Re-enter password for Graylog user in Wazuh
       private: true
       confirm: true
-      salt_size: 7
 
   roles:
     - graylog

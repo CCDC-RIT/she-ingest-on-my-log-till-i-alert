@@ -70,6 +70,62 @@
   args:
     creates: /var/ossec/etc/wazuh-passwords.txt
 
+- name: Extract the Wazuh API password from the tar file
+  ansible.builtin.shell: |
+    tar -axf /tmp/wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt -O | grep -P "'wazuh'" -A 1 | grep -Po "(?<=api_password: ')[^']+"
+  register: wazuh_api_password
+  changed_when: false
+
+- name: Debug extracted API password
+  ansible.builtin.debug:
+    msg: "API password: {{ wazuh_api_password.stdout }}"
+
+- name: Save API password to a fact
+  ansible.builtin.set_fact:
+    wazuh_api_password: "{{ wazuh_api_password.stdout }}"
+
+- name: Authenticate and retrieve the token
+  ansible.builtin.uri:
+    url: "https://127.0.0.1:55000/security/user/authenticate"
+    method: POST
+    user: "wazuh"
+    password: "{{ wazuh_api_password }}"
+    body_format: json
+    headers:
+      Content-Type: "application/json"
+    validate_certs: no
+    return_content: yes
+  register: auth_response
+
+- name: Extract the token from the response
+  ansible.builtin.set_fact:
+    wazuh_token: "{{ auth_response.json.data.token }}"
+
+- name: Debug the token
+  ansible.builtin.debug:
+    msg: "Wazuh API token: {{ wazuh_token }}"
+
+- name: Send API request to add Graylog user
+  ansible.builtin.uri:
+    url: "https://127.0.0.1:55000/security/users"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ wazuh_token }}"
+      Content-Type: "application/json"
+    body: |
+      {
+        "password": "{{ wazuh_graylog_password }}",
+        "username": "graylog"
+      }
+    body_format: json
+    validate_certs: no
+    return_content: yes
+  register: create_user_response
+
+- name: Debug the response from user creation
+  ansible.builtin.debug:
+    msg: "Response from user creation: {{ create_user_response }}"
+
 - name: Set ownership for ossec.log
   ansible.builtin.file:
     path: /var/ossec/logs/ossec.log
