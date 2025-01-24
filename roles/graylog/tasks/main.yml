@@ -17,24 +17,24 @@
 
 - name: Download MongoDB GPG key
   ansible.builtin.get_url:
-    url: https://www.mongodb.org/static/pgp/server-8.0.asc
-    dest: /tmp/mongodb-server-8.0.asc
+    url: https://www.mongodb.org/static/pgp/server-7.0.asc
+    dest: /tmp/mongodb-server-7.0.asc
 
 - name: Add MongoDB GPG key to keyrings
   ansible.builtin.command:
-    cmd: gpg --dearmor -o /usr/share/keyrings/mongodb-server-8.0.gpg /tmp/mongodb-server-8.0.asc
+    cmd: gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg /tmp/mongodb-server-7.0.asc
   become: true
 
 - name: create sources.list entry for mongodb
   ansible.builtin.file:
-    path: /etc/apt/sources.list.d/mongodb-org-8.0.list
+    path: /etc/apt/sources.list.d/mongodb-org-7.0.list
     state: touch
     mode: 0644
 
 - name: create sources.list entry for mongodb
   ansible.builtin.lineinfile:
-    path: /etc/apt/sources.list.d/mongodb-org-8.0.list
-    line: "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/8.0 multiverse" 
+    path: /etc/apt/sources.list.d/mongodb-org-7.0.list
+    line: "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" 
     state: present
 
 - name: Update package cache
@@ -49,6 +49,12 @@
       - gnupg
       - curl
       - mongodb-org
+      - apt-transport-https 
+      - openjdk-21-jre-headless 
+      - uuid-runtime 
+      - pwgen 
+      - dirmngr 
+      - wget
     state: present
   # when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages and 'mongodb' not in ansible_facts.packages"
 
@@ -120,6 +126,37 @@
     path: /etc/graylog/server/server.conf
     regexp: '^elasticsearch_hosts='
     line: "elasticsearch_hosts=https://admin:{{ wazuh_password }}@{{ manager_ip }}:9200"
+    state: present
+  
+- name: Create graylog certs directory
+  ansible.builtin.file:
+    path: /etc/graylog/server/certs
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Copy cacerts file from Java directory to Graylog certs directory
+  ansible.builtin.copy:
+    src: /usr/lib/jvm/java-21-openjdk-amd64/lib/security/cacerts
+    dest: /etc/graylog/server/certs/cacerts
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Import the Wazuh indexer certificate to the cacerts keystore
+  ansible.builtin.command:
+    cmd: >
+      keytool -importcert -keystore /etc/graylog/server/certs/cacerts -storepass changeit -alias root_ca -file "{{ wazuh_indexer_cert }}"
+  environment:
+    JAVA_HOME: "/usr/lib/jvm/java-21-openjdk-amd64"
+
+- name: Ensure the correct GRAYLOG_SERVER_JAVA_OPTS in /etc/default/graylog-server
+  ansible.builtin.lineinfile:
+    path: /etc/default/graylog-server
+    regexp: '^GRAYLOG_SERVER_JAVA_OPTS=".*-Dlog4j2\.formatMsgNoLookups=true.*"'
+    line: 'GRAYLOG_SERVER_JAVA_OPTS="$GRAYLOG_SERVER_JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true -Djavax.net.ssl.trustStore=/etc/graylog/server/certs/cacerts -Djavax.net.ssl.trustStorePassword=changeit"'
+    backrefs: yes
     state: present
 
 - name: Enable and start Graylog Server
