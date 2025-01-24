@@ -64,3 +64,35 @@
   when: wazuh_agent_config.openscap.disable == 'no'
   tags:
     - init
+
+- name: Add the Osquery GPG key
+  ansible.builtin.get_url:
+    url: https://pkg.osquery.io/rpm/GPG
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-osquery
+    mode: '0644'
+
+- name: Add the Osquery repository
+  ansible.builtin.command:
+    cmd: yum-config-manager --add-repo https://pkg.osquery.io/rpm/osquery-s3-rpm.repo
+  args:
+    creates: /etc/yum.repos.d/osquery-s3-rpm.repo
+
+- name: Enable the Osquery repository
+  ansible.builtin.command:
+    cmd: yum-config-manager --enable osquery-s3-rpm-repo
+
+- name: Install Osquery
+  ansible.builtin.yum:
+    name: osquery
+    state: present
+
+- name: Copy over osquery config file
+  ansible.builtin.copy: 
+    src: osquery.conf
+    dest: /etc/osquery/osquery.conf
+
+- name: Enable and start osquery
+  systemd:
+    name: osqueryd.service
+    enabled: true
+    state: restarted
