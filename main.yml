@@ -19,10 +19,6 @@
       prompt: Enter Wazuh admin password
       private: true
       confirm: true
-    - name: wazuh_graylog_password
-      prompt: Enter password for Graylog user in Wazuh
-      private: true
-      confirm: true
 
 - name: Install Wazuh Agents
   hosts: linux
@@ -53,8 +49,8 @@
       prompt: Enter graylog root password
       private: true
       confirm: true
-    - name: wazuh_graylog_password
-      prompt: Re-enter password for Graylog user in Wazuh
+    - name: wazuh_password
+      prompt: Re-enter password for Wazuh admin user
       private: true
       confirm: true
 

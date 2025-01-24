@@ -133,7 +133,7 @@
   lineinfile:
     path: /etc/graylog/server/server.conf
     regexp: '^elasticsearch_hosts='
-    line: "elasticsearch_hosts=https://graylog:{{ wazuh_graylog_password }}@{{ manager_ip }}:9200"
+    line: "elasticsearch_hosts=https://admin:{{ wazuh_password }}@{{ manager_ip }}:9200"
     state: present
   
 - name: Create graylog certs directory
