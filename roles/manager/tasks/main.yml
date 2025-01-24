@@ -141,6 +141,18 @@
     group: wazuh
     mode: '0660'
 
+- name: Add subnet info to ossec.conf
+  ansible.builtin.replace:
+    path: /var/ossec/etc/ossec.conf
+    regexp: "SUBNETHERE"
+    replace: "{{ subnet }}"
+
+- name: Add manager IP to ossec.conf
+  ansible.builtin.replace:
+    path: /var/ossec/etc/ossec.conf
+    regexp: "MANAGERIPHERE"
+    replace: "{{ manager_ip }}"
+
 - name: Copy linux_rules.xml
   ansible.builtin.copy:
     src: linux_rules.xml
