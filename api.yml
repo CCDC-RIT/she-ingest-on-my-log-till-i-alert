@@ -1,0 +1,51 @@
+---
+- name: Wazuh API Authentication and User Creation Playbook
+  hosts: localhost
+  become: true
+  gather_facts: no
+  vars:
+    wazuh_graylog_password: "Password1234!"  # Change this to the desired password for the Graylog user
+
+  tasks:
+    - name: Extract the Wazuh API password from the tar file
+      ansible.builtin.shell: |
+        tar -axf /tmp/wazuh-install-files.tar wazuh-install-files/wazuh-passwords.txt -O | grep -P "'wazuh'" -A 1 | grep -Po "(?<=api_password: ')[^']+"
+      register: wazuh_api_password
+      changed_when: false
+
+    - name: Debug extracted API password
+      ansible.builtin.debug:
+        msg: "API password: {{ wazuh_api_password.stdout }}"
+
+    - name: Save API password to a fact
+      ansible.builtin.set_fact:
+        wazuh_api_password: "{{ wazuh_api_password.stdout }}"
+
+    - name: Authenticate and retrieve the token
+      ansible.builtin.command:
+        cmd: >
+           curl -u wazuh:{{ wazuh_api_password }} -k -X POST "https://127.0.0.1:55000/security/user/authenticate"
+      register: auth_response
+      changed_when: false 
+
+    - name: Extract the token from the response
+      ansible.builtin.set_fact:
+        wazuh_token: "{{ auth_response.stdout | from_json | json_query('data.token') }}"
+
+    - name: Debug the token
+      ansible.builtin.debug:
+        msg: "Wazuh API token: {{ wazuh_token }}"
+    
+    - name: Send API request to add Graylog user
+      ansible.builtin.command:
+        cmd: >
+          curl -X POST https://127.0.0.1:55000/security/users
+          -H "Authorization: Bearer {{ wazuh_token }}"
+          -H "Content-Type: application/json"
+          -d '{"password": "{{ wazuh_graylog_password }}", "username": "graylog"}'
+          -k
+      register: create_user_response
+
+    - name: Debug the response for user creation
+      ansible.builtin.debug:
+        msg: "User creation response: {{ create_user_response }}"
