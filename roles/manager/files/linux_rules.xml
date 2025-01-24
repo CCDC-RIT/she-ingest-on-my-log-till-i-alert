@@ -377,18 +377,17 @@
   </rule>
 
 <!-- REMOVING ANNOYING ALERTS -->
-    <rule id="103000" level="0"> 
-      <if_sid>24001</if_sid> 
-      <match>already running</match>
-      <description>osquery already running</description> 
-    </rule>
-<!--
+  <rule id="103000" level="0"> 
+    <if_sid>24001</if_sid> 
+    <match>already running</match>
+    <description>osquery already running</description> 
+  </rule>
+
   <rule id="200220" level="1">
     <if_sid>1002</if_sid>
     <decoded_as>json</decoded_as>
     <description>Osquery Messages grouped.</description>
   </rule>
-  -->
   <rule id="200221" level="3">
     <decoded_as>json</decoded_as>
     <field name="name">bpf_socket_events</field>
@@ -1005,6 +1004,17 @@
   <options>no_full_log</options>
   <mitre>
     <id>T1033</id>
+  </mitre>
+  <group>bpf_process_events,</group>
+  </rule>
+
+  <rule id="200288" level="12">
+  <if_sid>200223</if_sid>
+  <field name="columns.cmdline">^curl -F</field>
+  <description>Detects a curl process start on linux, which indicates a file pushed to a remote server.</description>
+  <options>no_full_log</options>
+  <mitre>
+    <id>T1048</id>
   </mitre>
   <group>bpf_process_events,</group>
   </rule>

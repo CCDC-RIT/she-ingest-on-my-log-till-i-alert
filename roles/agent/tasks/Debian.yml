@@ -121,3 +121,34 @@
   when: wazuh_agent_config.openscap.disable == 'no'
   tags:
     - config
+
+- name: Create the keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download the osquery GPG key
+  ansible.builtin.get_url:
+    url: https://pkg.osquery.io/deb/pubkey.gpg
+    dest: /etc/apt/keyrings/osquery.asc
+    mode: '0644'
+
+- name: Add the osquery repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/osquery.asc] https://pkg.osquery.io/deb deb main"
+    state: present
+
+- name: Install osquery
+  ansible.builtin.apt:
+    name: osquery
+    state: present
+    update_cache: true
+
+- name: Enable and start osquery
+  systemd:
+    name: osqueryd.service
+    enabled: true
+    state: restarted
