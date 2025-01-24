@@ -164,6 +164,12 @@
     line: LimitMEMLOCK=infinity
     state: present
     insertafter: '^\[Service\]$'
+  
+- name: Fetch wazuh indexer cert 
+  ansible.builtin.fetch:
+    src: /etc/wazuh-indexer/certs/wazuh-indexer.pem
+    dest: /opt/wazuh-indexer.pem
+    flat: yes
 
 - name: Copy Linux agent configs
   ansible.builtin.copy:

@@ -19,10 +19,13 @@
   ansible.builtin.get_url:
     url: https://www.mongodb.org/static/pgp/server-7.0.asc
     dest: /tmp/mongodb-server-7.0.asc
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Add MongoDB GPG key to keyrings
   ansible.builtin.command:
-    cmd: gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg /tmp/mongodb-server-7.0.asc
+    cmd: gpg --dearmor --yes -o /usr/share/keyrings/mongodb-server-7.0.gpg /tmp/mongodb-server-7.0.asc
   become: true
 
 - name: create sources.list entry for mongodb
@@ -145,10 +148,18 @@
     group: root
     mode: '0644'
 
+- name: Fetch the Wazuh indexer certificate
+  ansible.builtin.copy:
+    src: /opt/wazuh-indexer.pem
+    dest: /tmp/wazuh-indexer.pem
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Import the Wazuh indexer certificate to the cacerts keystore
   ansible.builtin.command:
     cmd: >
-      keytool -importcert -keystore /etc/graylog/server/certs/cacerts -storepass changeit -alias root_ca -file "{{ wazuh_indexer_cert }}"
+      keytool -importcert -keystore /etc/graylog/server/certs/cacerts -storepass changeit -alias root_ca -file /tmp/wazuh-indexer.pem -noprompt
   environment:
     JAVA_HOME: "/usr/lib/jvm/java-21-openjdk-amd64"
 
