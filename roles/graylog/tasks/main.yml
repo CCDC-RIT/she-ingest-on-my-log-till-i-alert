@@ -114,11 +114,16 @@
     group: graylog
     mode: '0640'
 
+- name: Hash root_password
+  ansible.builtin.shell: 
+    cmd: "echo -n '{{ root_password }}' | sha256sum | awk '{print $1}'"
+  register: hashed_password
+
 - name: Set root_password_sha2 in server.conf
   ansible.builtin.lineinfile:
     path: /etc/graylog/server/server.conf
     regexp: '^root_password_sha2 ='
-    line: "root_password_sha2 ={{ root_password | password_hash('sha256') }}"
+    line: "root_password_sha2 = {{ hashed_password.stdout }}"
     state: present
     owner: graylog
     group: graylog
