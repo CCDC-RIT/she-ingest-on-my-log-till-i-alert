@@ -113,6 +113,13 @@
     dest: /tmp/wazuh-indexer.pem
     flat: yes
 
+- name: Replace compatibility.override_main_response_version 
+  ansible.builtin.lineinfile:
+    path: /etc/wazuh-indexer/opensearch.yml
+    regexp: '^compatibility\.override_main_response_version: true$'
+    line: 'compatibility.override_main_response_version: false'
+    backrefs: yes
+
 - name: Copy Linux agent configs
   ansible.builtin.copy:
     src: agent_linux.conf
