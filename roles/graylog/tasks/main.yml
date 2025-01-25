@@ -3,52 +3,14 @@
 - name: Check installed packages
   ansible.builtin.package_facts:
 
-- name: Add Graylog GPG key
-  apt_key:
-    url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"
-    state: present
-  when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+- include_tasks: "redhat.yml"
+  when: ansible_os_family == "RedHat"
 
-- name: Download and install Graylog repository
-  apt:
-    deb: "https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.deb" #keep locally
-    state: present
-  when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
-
-- name: Download MongoDB GPG key
-  ansible.builtin.get_url:
-    url: https://www.mongodb.org/static/pgp/server-7.0.asc
-    dest: /tmp/mongodb-server-7.0.asc
-    owner: root
-    group: root
-    mode: '0644'
-  when: "'mongodb-org' not in ansible_facts.packages"
-
-- name: Add MongoDB GPG key to keyrings
-  ansible.builtin.command:
-    cmd: gpg --dearmor --yes -o /usr/share/keyrings/mongodb-server-7.0.gpg /tmp/mongodb-server-7.0.asc
-  when: "'mongodb-org' not in ansible_facts.packages"
-
-- name: create sources.list entry for mongodb
-  ansible.builtin.file:
-    path: /etc/apt/sources.list.d/mongodb-org-7.0.list
-    state: touch
-    mode: 0644
-  when: "'mongodb-org' not in ansible_facts.packages"
-
-- name: create sources.list entry for mongodb
-  ansible.builtin.lineinfile:
-    path: /etc/apt/sources.list.d/mongodb-org-7.0.list
-    line: "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" 
-    state: present
-  when: "'mongodb-org' not in ansible_facts.packages"
-
-- name: Update package cache
-  apt:
-    update_cache: yes
+- include_tasks: "debian.yml"
+  when: ansible_os_family == "Debian"
 
 - name: Install dependencies
-  apt:
+  ansible.builtin.package:
     name:  
       - apt-transport-https 
       - openjdk-21-jre-headless 
@@ -61,7 +23,7 @@
     state: present
 
 - name: Install Graylog components
-  apt:
+  ansible.builtin.package:
     name:
       - graylog-datanode
       - graylog-server
