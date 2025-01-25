@@ -197,11 +197,12 @@ wazuh_agent_syscheck:
     - /etc/cups/certs
     - /etc/dumpdates
     - /etc/svc/volatile
-    - /home/*/snap/
-    - /home/*/cache/
-    - /home/*/mozilla/ 
   ignore_linux_type:
     - '.log$|.swp$'
+    - /snap/
+    - /.cache/
+    - /.mozilla/
+    - /.local/ 
   ignore_win:
     - '.log$|.htm$|.jpg$|.png$|.chm$|.pnf$|.evtx$'
   no_diff:
