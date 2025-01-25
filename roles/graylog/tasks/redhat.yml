@@ -1,0 +1,33 @@
+---
+- name: Check installed packages
+  ansible.builtin.package_facts:
+
+- name: Add MongoDB repository file
+  copy:
+    dest: /etc/yum.repos.d/mongodb-org.repo
+    content: |
+      [mongodb-org-7.0]
+      name=MongoDB Repository
+      baseurl=https://repo.mongodb.org/yum/redhat/9/mongodb-org/7.0/x86_64/
+      gpgcheck=1
+      enabled=1
+      gpgkey=https://pgp.mongodb.com/server-7.0.asc
+    owner: root
+    group: root
+    mode: '0644'
+  when: "'mongodb-org' not in ansible_facts.packages"
+
+- name: Download and install Graylog repository RPM
+  rpm_key:
+    state: present
+    key: https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.rpm
+  when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+
+- name: Install Graylog repository RPM
+  command: rpm -Uvh https://packages.graylog2.org/repo/packages/graylog-6.1-repository_latest.rpm
+  creates: /etc/yum.repos.d/graylog.repo
+  when: "'graylog-server' not in ansible_facts.packages and 'graylog-datanode' not in ansible_facts.packages"
+
+- name: Update DNF package cache
+  ansible.builtin.dnf:
+    update_cache: true

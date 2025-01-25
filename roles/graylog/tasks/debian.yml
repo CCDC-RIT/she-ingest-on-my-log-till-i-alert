@@ -1,4 +1,7 @@
 ---
+- name: Check installed packages
+  ansible.builtin.package_facts:
+
 - name: Add Graylog GPG key
   apt_key:
     url: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xf5679a222c647c87527c2f8cb00a0bd1e2c63c11"

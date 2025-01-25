@@ -1,8 +1,5 @@
 ---
 #TODO: rewrite for package managers other than apt
-- name: Check installed packages
-  ansible.builtin.package_facts:
-
 - include_tasks: "redhat.yml"
   when: ansible_os_family == "RedHat"
 
@@ -33,7 +30,8 @@
 - name: Enable and restart MongoDB
   systemd:
     name: mongod.service
-    enabled: true
+    enabled: true 
+    daemon_reload: true
     state: restarted
 
 - name: Set vm.max_map_count for Elasticsearch
